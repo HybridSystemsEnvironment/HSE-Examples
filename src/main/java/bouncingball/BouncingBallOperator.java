@@ -11,9 +11,6 @@ import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.ExecutionParameters;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.figure.Figure;
-import edu.ucsc.cross.hse.core.file.DataFormat;
-import edu.ucsc.cross.hse.core.file.FileBrowser;
-import edu.ucsc.cross.hse.core.file.HSEFile;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.modeling.SystemSet;
@@ -22,6 +19,7 @@ import edu.ucsc.cross.hse.core.specification.IntegratorType;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
 import edu.ucsc.cross.hse.core.variable.RandomVariable;
+import inverter.InverterEnvironmentOperator;
 
 public class BouncingBallOperator
 {
@@ -42,8 +40,9 @@ public class BouncingBallOperator
 	public static void processResults(HSEnvironment environment)
 	{
 		generateVerticalFigure(environment.getTrajectories()).display();
-		generateQuadFigure(environment.getTrajectories()).display();
-		environment.saveToFile(FileBrowser.save(), DataFormat.HSE);
+		//generateQuadFigure(environment.getTrajectories()).display();
+		InverterEnvironmentOperator.processResults(environment);
+		//		environment.saveToFile(FileBrowser.save(), DataFormat.HSE);
 	}
 
 	/**
@@ -78,16 +77,22 @@ public class BouncingBallOperator
 		 * 
 		 * @return SystemSet selected set
 		 */
-		private static SystemSet getSelectedSystemSet() throws Exception
+		public static SystemSet getSystemSet()
 		{
 			/* uncomment for system set with one ball */
-			return generateSingleSystemSet(.95, 9.81, 0.0, 3.0, 3.0, 1.0);
+			//return generateSingleSystemSet(.95, 9.81, 0.0, 3.0, 3.0, 1.0);
 
 			/*
 			 * uncomment for system set with multiple balls with randomized
 			 * initial conditions
 			 */
-			//return generateRandomizedSystems(.95, 9.81, 1, 1, 3, 2, 3, 1, 3, 1, 2);
+			return generateRandomizedSystems(.99, 9.81, 96, 1, 3, 2, 3, 1, 3, 1, 2);
+
+			/*
+			 * uncomment for system set with multiple balls with randomized
+			 * initial conditions and also a hybrid inverter
+			 */
+			//return getSystemSetA(.99, 9.81, 96, 1, 3, 2, 3, 1, 3, 1, 2);
 
 			/* uncomment to load system set from file using browser */
 			//return HSEFile.loadObjectFromFile(FileBrowser.load(), SystemSet.class);
@@ -101,10 +106,13 @@ public class BouncingBallOperator
 		 * 
 		 * @return SystemSet
 		 */
-		public static SystemSet getSystemSetA()
+		public static SystemSet getSystemSetA(double restitution_coefficient, double gravity_constant, int quantity,
+		double min_x_pos, double max_x_pos, double min_y_pos, double max_y_pos, double min_x_vel, double max_x_vel,
+		double min_y_vel, double max_y_vel)
 		{
-			SystemSet console = new SystemSet();
-
+			SystemSet console = generateRandomizedSystems(restitution_coefficient, gravity_constant, quantity,
+			min_x_pos, max_x_pos, min_y_pos, max_y_pos, min_x_vel, max_x_vel, min_y_vel, max_y_vel);
+			console.add(InverterEnvironmentOperator.SystemSetConfig.getSystemSetA());
 			return console;
 		}
 
@@ -116,17 +124,7 @@ public class BouncingBallOperator
 		public static SystemSet getSystemSetB()
 		{
 			SystemSet SystemSet = new SystemSet();
-
 			return SystemSet;
-		}
-
-		/**
-		 * Application to create a new system set file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewSystemSetFile();
 		}
 
 		public static SystemSet generateSingleSystemSet(double restitution_coefficient, double gravity_constant,
@@ -160,39 +158,6 @@ public class BouncingBallOperator
 			}
 			return systems;
 		}
-
-		///////// Internal Methods ///////// 
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewSystemSetFile()
-		{
-			SystemSet console = new SystemSet();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static SystemSet getSystemSet()
-		{
-			SystemSet systemSet = new SystemSet(); // fetch default
-			try
-			{
-				systemSet = getSelectedSystemSet();
-				return systemSet;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get system set", getFail);
-			}
-
-			return new SystemSet(); // return initialized flag
-		}
-
 	}
 
 	public static class ExecutionParametersConfig
@@ -206,10 +171,10 @@ public class BouncingBallOperator
 		public static ExecutionParameters getExecutionParameters()
 		{
 			/* uncomment for config A */
-			return getExecutionParametersA();
+			//return getExecutionParametersA();
 
 			/* uncomment for config A */
-			//return getExecutionParametersB();
+			return getExecutionParametersB();
 
 			/* uncomment to load execution parameters from file using browser */
 			//return HSEFile.loadObjectFromFile(FileBrowser.load(), ExecutionParameters.class);
@@ -240,8 +205,8 @@ public class BouncingBallOperator
 		public static ExecutionParameters getExecutionParametersB()
 		{
 			ExecutionParameters parameters = new ExecutionParameters();
-			parameters.maximumJumps = 100;
-			parameters.maximumTime = 50.0;
+			parameters.maximumJumps = 10000;
+			parameters.maximumTime = 8;
 			parameters.dataPointInterval = .1;
 			return parameters;
 		}
@@ -256,7 +221,7 @@ public class BouncingBallOperator
 		 * 
 		 * @return EnvironmentSettings selected set
 		 */
-		private static EnvironmentSettings getSelectedEnvironmentSettings() throws Exception
+		public static EnvironmentSettings getEnvironmentSettings()
 		{
 			/* uncomment for config A */
 			return getEnvironmentSettingsA();
@@ -293,55 +258,15 @@ public class BouncingBallOperator
 			settings.odeMinimumStepSize = .5E-9;
 			settings.odeMaximumStepSize = .5E-5;
 			settings.odeSolverAbsoluteTolerance = 1.0e-7;
-			settings.odeRelativeTolerance = 1.0e-12;
-			settings.eventHandlerMaximumCheckInterval = .1e-16;
+			settings.odeRelativeTolerance = 1.0e-10;
+			settings.eventHandlerMaximumCheckInterval = .1e-12;
 			settings.eventHandlerConvergenceThreshold = .1e-8;
-			settings.maxEventHandlerIterations = 50;
+			settings.maxEventHandlerIterations = 25;
 			settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 			settings.domainPriority = DomainPriority.JUMP;
 			settings.storeNonPrimativeData = false;
 			return settings;
 		}
-
-		/**
-		 * Application to create a new environment settings file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewEnvironmentSettingsFile();
-		}
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewEnvironmentSettingsFile()
-		{
-			EnvironmentSettings console = new EnvironmentSettings();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static EnvironmentSettings getEnvironmentSettings()
-		{
-			EnvironmentSettings EnvironmentSettings = new EnvironmentSettings(); // fetch default
-			try
-			{
-				EnvironmentSettings = getSelectedEnvironmentSettings();
-				return EnvironmentSettings;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get environment settings", getFail);
-			}
-
-			return new EnvironmentSettings(); // return initialized flag
-		}
-
 	}
 
 	public static class ConsoleSettingConfig
@@ -355,10 +280,10 @@ public class BouncingBallOperator
 		public static ConsoleSettings getConsoleSettings() throws Exception
 		{
 			/* uncomment for config A */
-			return getConsoleSettingsA();
+			//return getConsoleSettingsA();
 
 			/* uncomment for config A */
-			//return getConsoleSettingsB();
+			return getConsoleSettingsB();
 
 			/* uncomment to load console settings from file using browser */
 			//return HSEFile.loadObjectFromFile(FileBrowser.load(), ConsoleSettings.class);
@@ -405,27 +330,6 @@ public class BouncingBallOperator
 			consoleSettings.printLogToFile = true;
 			consoleSettings.terminateAtInput = true;
 			return consoleSettings;
-		}
-
-		/**
-		 * Application to create a new console settings file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewConsoleSettingsFile();
-		}
-
-		///////// Internal Methods ///////// 
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewConsoleSettingsFile()
-		{
-			ConsoleSettings console = new ConsoleSettings();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
 		}
 
 		/**

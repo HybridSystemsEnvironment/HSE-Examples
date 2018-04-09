@@ -91,6 +91,8 @@ public class EnvironmentSettingConfig
 		createNewEnvironmentSettingsFile();
 	}
 
+	///////// Internal Methods ///////// 
+
 	/**
 	 * Create a new console setting file
 	 */

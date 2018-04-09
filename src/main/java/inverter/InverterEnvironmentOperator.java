@@ -9,7 +9,6 @@ import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.figure.Figure;
 import edu.ucsc.cross.hse.core.file.DataFormat;
 import edu.ucsc.cross.hse.core.file.FileBrowser;
-import edu.ucsc.cross.hse.core.file.HSEFile;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.modeling.SystemSet;
@@ -23,6 +22,7 @@ public class InverterEnvironmentOperator
 
 	public static void main(String args[])
 	{
+		ConsoleSettingConfig.configureConsole();
 		HSEnvironment environment = getEnvironment();
 		operateEnvironment(environment);
 		processResults(environment);
@@ -71,7 +71,7 @@ public class InverterEnvironmentOperator
 		 * 
 		 * @return SystemSet selected set
 		 */
-		private static SystemSet getSelectedSystemSet() throws Exception
+		public static SystemSet getSystemSet()
 		{
 			/* uncomment for config A */
 			return getSystemSetA();
@@ -119,47 +119,6 @@ public class InverterEnvironmentOperator
 			return SystemSet;
 		}
 
-		/**
-		 * Application to create a new system set file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewSystemSetFile();
-		}
-
-		///////// Internal Methods ///////// 
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewSystemSetFile()
-		{
-			SystemSet console = new SystemSet();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static SystemSet getSystemSet()
-		{
-			SystemSet systemSet = new SystemSet(); // fetch default
-			try
-			{
-				systemSet = getSelectedSystemSet();
-				return systemSet;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get system set", getFail);
-			}
-
-			return new SystemSet(); // return initialized flag
-		}
-
 	}
 
 	public static class ExecutionParametersConfig
@@ -170,7 +129,7 @@ public class InverterEnvironmentOperator
 		 * 
 		 * @return ExecutionParameters selected set
 		 */
-		private static ExecutionParameters getSelectedExecutionParameters() throws Exception
+		public static ExecutionParameters getExecutionParameters()
 		{
 			/* uncomment for config A */
 			return getExecutionParametersA();
@@ -212,46 +171,6 @@ public class InverterEnvironmentOperator
 			parameters.dataPointInterval = .01;
 			return parameters;
 		}
-
-		/**
-		 * Application to create a new execution parameters file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewExecutionParametersFile();
-		}
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewExecutionParametersFile()
-		{
-			ExecutionParameters console = new ExecutionParameters();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static ExecutionParameters getExecutionParameters()
-		{
-			ExecutionParameters ExecutionParameters = new ExecutionParameters(); // fetch default
-			try
-			{
-				ExecutionParameters = getSelectedExecutionParameters();
-				return ExecutionParameters;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get execution parameters", getFail);
-			}
-
-			return new ExecutionParameters(); // return initialized flag
-		}
-
 	}
 
 	public static class EnvironmentSettingConfig
@@ -262,7 +181,7 @@ public class InverterEnvironmentOperator
 		 * 
 		 * @return EnvironmentSettings selected set
 		 */
-		private static EnvironmentSettings getSelectedEnvironmentSettings() throws Exception
+		public static EnvironmentSettings getEnvironmentSettings()
 		{
 			/* uncomment for config A */
 			return getEnvironmentSettingsA();
@@ -306,56 +225,17 @@ public class InverterEnvironmentOperator
 		public static EnvironmentSettings getEnvironmentSettingsB()
 		{
 			EnvironmentSettings settings = new EnvironmentSettings();
-			settings.odeMinimumStepSize = .5E-8;
+			settings.odeMinimumStepSize = .5E-9;
 			settings.odeMaximumStepSize = .5E-4;
-			settings.odeSolverAbsoluteTolerance = 1.0e-6;
-			settings.odeRelativeTolerance = 1.0e-10;
+			settings.odeSolverAbsoluteTolerance = 1.0e-10;
+			settings.odeRelativeTolerance = 1.0e-12;
 			settings.eventHandlerMaximumCheckInterval = .1e-10;
-			settings.eventHandlerConvergenceThreshold = .1e-5;
+			settings.eventHandlerConvergenceThreshold = .1e-6;
 			settings.maxEventHandlerIterations = 25;
 			settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 			settings.domainPriority = DomainPriority.JUMP;
 			settings.storeNonPrimativeData = false;
 			return settings;
-		}
-
-		/**
-		 * Application to create a new environment settings file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewEnvironmentSettingsFile();
-		}
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewEnvironmentSettingsFile()
-		{
-			EnvironmentSettings console = new EnvironmentSettings();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static EnvironmentSettings getEnvironmentSettings()
-		{
-			EnvironmentSettings EnvironmentSettings = new EnvironmentSettings(); // fetch default
-			try
-			{
-				EnvironmentSettings = getSelectedEnvironmentSettings();
-				return EnvironmentSettings;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get environment settings", getFail);
-			}
-
-			return new EnvironmentSettings(); // return initialized flag
 		}
 
 	}
@@ -368,13 +248,13 @@ public class InverterEnvironmentOperator
 		 * 
 		 * @return true is configuration is successfull
 		 */
-		public static ConsoleSettings getConsoleSettings() throws Exception
+		public static ConsoleSettings getConsoleSettings()
 		{
 			/* uncomment for config A */
-			return getConsoleSettingsA();
+			//return getConsoleSettingsA();
 
 			/* uncomment for config A */
-			//return getConsoleSettingsB();
+			return getConsoleSettingsB();
 
 			/* uncomment to load console settings from file using browser */
 			//return HSEFile.loadObjectFromFile(FileBrowser.load(), ConsoleSettings.class);
@@ -421,27 +301,6 @@ public class InverterEnvironmentOperator
 			consoleSettings.printLogToFile = true;
 			consoleSettings.terminateAtInput = true;
 			return consoleSettings;
-		}
-
-		/**
-		 * Application to create a new console settings file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewConsoleSettingsFile();
-		}
-
-		///////// Internal Methods ///////// 
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewConsoleSettingsFile()
-		{
-			ConsoleSettings console = new ConsoleSettings();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
 		}
 
 		/**

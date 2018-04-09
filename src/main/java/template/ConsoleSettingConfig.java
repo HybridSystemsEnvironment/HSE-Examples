@@ -100,7 +100,7 @@ public class ConsoleSettingConfig
 	}
 
 	/**
-	 * /** Attempt to configure console
+	 * Attempt to configure console
 	 */
 	public static void configureConsole()
 	{

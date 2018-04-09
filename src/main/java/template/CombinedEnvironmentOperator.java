@@ -5,7 +5,6 @@ import edu.ucsc.cross.hse.core.environment.ExecutionParameters;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.file.DataFormat;
 import edu.ucsc.cross.hse.core.file.FileBrowser;
-import edu.ucsc.cross.hse.core.file.HSEFile;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.modeling.SystemSet;
@@ -15,19 +14,28 @@ import edu.ucsc.cross.hse.core.specification.IntegratorType;
 public class CombinedEnvironmentOperator
 {
 
+	/**
+	 * Prepare and operate the environment
+	 */
 	public static void main(String args[])
 	{
 		ConsoleSettingConfig.configureConsole();
-		HSEnvironment environment = getEnvironment();
+		HSEnvironment environment = setupEnvironment();
 		operateEnvironment(environment);
 		processResults(environment);
 	}
 
+	/**
+	 * Perform the tasks necessary to operate the environment
+	 */
 	public static void operateEnvironment(HSEnvironment environment)
 	{
 		environment.run();
 	}
 
+	/**
+	 * Perform the tasks necessary to process the results
+	 */
 	public static void processResults(HSEnvironment environment)
 	{
 		environment.saveToFile(FileBrowser.save(), DataFormat.HSE);
@@ -38,7 +46,7 @@ public class CombinedEnvironmentOperator
 	 * 
 	 * @return environment
 	 */
-	public static HSEnvironment getEnvironment()
+	public static HSEnvironment setupEnvironment()
 	{
 		HSEnvironment environment = new HSEnvironment();
 
@@ -65,7 +73,7 @@ public class CombinedEnvironmentOperator
 		 * 
 		 * @return SystemSet selected set
 		 */
-		private static SystemSet getSelectedSystemSet() throws Exception
+		private static SystemSet getSystemSet()
 		{
 			/* uncomment for config A */
 			return getSystemSetA();
@@ -104,47 +112,6 @@ public class CombinedEnvironmentOperator
 			return SystemSet;
 		}
 
-		/**
-		 * Application to create a new system set file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewSystemSetFile();
-		}
-
-		///////// Internal Methods ///////// 
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewSystemSetFile()
-		{
-			SystemSet console = new SystemSet();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static SystemSet getSystemSet()
-		{
-			SystemSet systemSet = new SystemSet(); // fetch default
-			try
-			{
-				systemSet = getSelectedSystemSet();
-				return systemSet;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get system set", getFail);
-			}
-
-			return new SystemSet(); // return initialized flag
-		}
-
 	}
 
 	public static class ExecutionParametersConfig
@@ -155,7 +122,7 @@ public class CombinedEnvironmentOperator
 		 * 
 		 * @return ExecutionParameters selected set
 		 */
-		private static ExecutionParameters getSelectedExecutionParameters() throws Exception
+		private static ExecutionParameters getExecutionParameters()
 		{
 			/* uncomment for config A */
 			return getExecutionParametersA();
@@ -198,45 +165,6 @@ public class CombinedEnvironmentOperator
 			return parameters;
 		}
 
-		/**
-		 * Application to create a new execution parameters file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewExecutionParametersFile();
-		}
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewExecutionParametersFile()
-		{
-			ExecutionParameters console = new ExecutionParameters();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static ExecutionParameters getExecutionParameters()
-		{
-			ExecutionParameters ExecutionParameters = new ExecutionParameters(); // fetch default
-			try
-			{
-				ExecutionParameters = getSelectedExecutionParameters();
-				return ExecutionParameters;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get execution parameters", getFail);
-			}
-
-			return new ExecutionParameters(); // return initialized flag
-		}
-
 	}
 
 	public static class EnvironmentSettingConfig
@@ -247,7 +175,7 @@ public class CombinedEnvironmentOperator
 		 * 
 		 * @return EnvironmentSettings selected set
 		 */
-		private static EnvironmentSettings getSelectedEnvironmentSettings() throws Exception
+		private static EnvironmentSettings getEnvironmentSettings()
 		{
 			/* uncomment for config A */
 			return getEnvironmentSettingsA();
@@ -302,45 +230,6 @@ public class CombinedEnvironmentOperator
 			settings.domainPriority = DomainPriority.JUMP;
 			settings.storeNonPrimativeData = false;
 			return settings;
-		}
-
-		/**
-		 * Application to create a new environment settings file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewEnvironmentSettingsFile();
-		}
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewEnvironmentSettingsFile()
-		{
-			EnvironmentSettings console = new EnvironmentSettings();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static EnvironmentSettings getEnvironmentSettings()
-		{
-			EnvironmentSettings EnvironmentSettings = new EnvironmentSettings(); // fetch default
-			try
-			{
-				EnvironmentSettings = getSelectedEnvironmentSettings();
-				return EnvironmentSettings;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get environment settings", getFail);
-			}
-
-			return new EnvironmentSettings(); // return initialized flag
 		}
 
 	}
@@ -406,27 +295,6 @@ public class CombinedEnvironmentOperator
 			consoleSettings.printLogToFile = true;
 			consoleSettings.terminateAtInput = true;
 			return consoleSettings;
-		}
-
-		/**
-		 * Application to create a new console settings file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewConsoleSettingsFile();
-		}
-
-		///////// Internal Methods ///////// 
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewConsoleSettingsFile()
-		{
-			ConsoleSettings console = new ConsoleSettings();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
 		}
 
 		/**

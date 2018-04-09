@@ -28,7 +28,7 @@ public class SystemSetConfig
 		/* uncomment for config A */
 		return getSystemSetA();
 
-		/* uncomment for config A */
+		/* uncomment for config B */
 		//return getSystemSetB();
 
 		/* uncomment to load system set from file using browser */
