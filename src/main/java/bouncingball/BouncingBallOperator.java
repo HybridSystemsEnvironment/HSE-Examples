@@ -1,4 +1,8 @@
-package inverter;
+package bouncingball;
+
+import java.awt.GridLayout;
+
+import javax.swing.JPanel;
 
 import org.jfree.chart.ChartPanel;
 
@@ -17,12 +21,14 @@ import edu.ucsc.cross.hse.core.specification.DomainPriority;
 import edu.ucsc.cross.hse.core.specification.IntegratorType;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
+import edu.ucsc.cross.hse.core.variable.RandomVariable;
 
-public class InverterEnvironmentOperator
+public class BouncingBallOperator
 {
 
 	public static void main(String args[])
 	{
+		ConsoleSettingConfig.configureConsole();
 		HSEnvironment environment = getEnvironment();
 		operateEnvironment(environment);
 		processResults(environment);
@@ -35,7 +41,8 @@ public class InverterEnvironmentOperator
 
 	public static void processResults(HSEnvironment environment)
 	{
-		InverterEnvironmentOperator.generateQuadFigure(environment.getTrajectories()).display();
+		generateVerticalFigure(environment.getTrajectories()).display();
+		generateQuadFigure(environment.getTrajectories()).display();
 		environment.saveToFile(FileBrowser.save(), DataFormat.HSE);
 	}
 
@@ -73,11 +80,14 @@ public class InverterEnvironmentOperator
 		 */
 		private static SystemSet getSelectedSystemSet() throws Exception
 		{
-			/* uncomment for config A */
-			return getSystemSetA();
+			/* uncomment for system set with one ball */
+			return generateSingleSystemSet(.95, 9.81, 0.0, 3.0, 3.0, 1.0);
 
-			/* uncomment for config A */
-			//return getSystemSetB();
+			/*
+			 * uncomment for system set with multiple balls with randomized
+			 * initial conditions
+			 */
+			//return generateRandomizedSystems(.95, 9.81, 1, 1, 3, 2, 3, 1, 3, 1, 2);
 
 			/* uncomment to load system set from file using browser */
 			//return HSEFile.loadObjectFromFile(FileBrowser.load(), SystemSet.class);
@@ -94,16 +104,7 @@ public class InverterEnvironmentOperator
 		public static SystemSet getSystemSetA()
 		{
 			SystemSet console = new SystemSet();
-			InverterParameters params = InverterParameters.idealParameters(.05);
-			Double p0 = 1.0;
-			Double q0 = 1.0;
-			//Double c = params.ci + Math.random() * (params.co - params.ci);
-			Double vIn0 = params.V;
-			Double iL0 = params.a * 1.0;
-			Double vC0 = 0.0;//params.b * Math.sqrt(c - Math.pow((iL0 / params.a), 2));
-			InverterState state = new InverterState(p0, q0, iL0, vC0, vIn0);
-			InverterSystem invSys = new InverterSystem(state, params);
-			console.add(invSys);
+
 			return console;
 		}
 
@@ -126,6 +127,38 @@ public class InverterEnvironmentOperator
 		public static void main(String args[])
 		{
 			createNewSystemSetFile();
+		}
+
+		public static SystemSet generateSingleSystemSet(double restitution_coefficient, double gravity_constant,
+		double x_pos, double y_pos, double x_vel, double y_vel)
+		{
+			return new SystemSet(generateSystem(.95, 9.81, 0.0, 0.0, 3.0, 1.0));
+		}
+
+		public static BouncingBallSystem generateSystem(double restitution_coefficient, double gravity_constant,
+		double x_pos, double y_pos, double x_vel, double y_vel)
+		{
+			BouncingBallParameters physics = new BouncingBallParameters(restitution_coefficient, gravity_constant);
+			BouncingBallState state = new BouncingBallState(x_pos, y_pos, x_vel, y_vel);
+			BouncingBallSystem system = new BouncingBallSystem(state, physics);
+			return system;
+		}
+
+		public static SystemSet generateRandomizedSystems(double restitution_coefficient, double gravity_constant,
+		int quantity, double min_x_pos, double max_x_pos, double min_y_pos, double max_y_pos, double min_x_vel,
+		double max_x_vel, double min_y_vel, double max_y_vel)
+		{
+			SystemSet systems = new SystemSet();
+			BouncingBallParameters physics = new BouncingBallParameters(restitution_coefficient, gravity_constant);
+			for (int ballNum = 0; ballNum < quantity; ballNum++)
+			{
+				BouncingBallState state = new BouncingBallState(RandomVariable.generate(min_y_pos, max_y_pos),
+				RandomVariable.generate(min_x_pos, max_x_pos), RandomVariable.generate(min_y_vel, max_y_vel),
+				RandomVariable.generate(min_y_vel, max_y_vel));
+				BouncingBallSystem ballSystem = new BouncingBallSystem(state, physics);
+				systems.add(ballSystem);
+			}
+			return systems;
 		}
 
 		///////// Internal Methods ///////// 
@@ -170,7 +203,7 @@ public class InverterEnvironmentOperator
 		 * 
 		 * @return ExecutionParameters selected set
 		 */
-		private static ExecutionParameters getSelectedExecutionParameters() throws Exception
+		public static ExecutionParameters getExecutionParameters()
 		{
 			/* uncomment for config A */
 			return getExecutionParametersA();
@@ -193,9 +226,9 @@ public class InverterEnvironmentOperator
 		public static ExecutionParameters getExecutionParametersA()
 		{
 			ExecutionParameters parameters = new ExecutionParameters();
-			parameters.maximumJumps = 4000000;
-			parameters.maximumTime = 0.3;
-			parameters.dataPointInterval = .005;
+			parameters.maximumJumps = 10000;
+			parameters.maximumTime = 10.0;
+			parameters.dataPointInterval = .05;
 			return parameters;
 		}
 
@@ -207,49 +240,10 @@ public class InverterEnvironmentOperator
 		public static ExecutionParameters getExecutionParametersB()
 		{
 			ExecutionParameters parameters = new ExecutionParameters();
-			parameters.maximumJumps = 10000;
-			parameters.maximumTime = 0.05;
-			parameters.dataPointInterval = .01;
+			parameters.maximumJumps = 100;
+			parameters.maximumTime = 50.0;
+			parameters.dataPointInterval = .1;
 			return parameters;
-		}
-
-		/**
-		 * Application to create a new execution parameters file for external
-		 * configuration
-		 */
-		public static void main(String args[])
-		{
-			createNewExecutionParametersFile();
-		}
-
-		/**
-		 * Create a new console setting file
-		 */
-		public static void createNewExecutionParametersFile()
-		{
-			ExecutionParameters console = new ExecutionParameters();
-			HSEFile file = new HSEFile(console);
-			file.saveToFile(FileBrowser.save(), DataFormat.XML);
-		}
-
-		/**
-		 * Attempt to configure console
-		 * 
-		 * @return true is configuration is successfull
-		 */
-		public static ExecutionParameters getExecutionParameters()
-		{
-			ExecutionParameters ExecutionParameters = new ExecutionParameters(); // fetch default
-			try
-			{
-				ExecutionParameters = getSelectedExecutionParameters();
-				return ExecutionParameters;
-			} catch (Exception getFail)
-			{
-				Console.error("Unable to get execution parameters", getFail);
-			}
-
-			return new ExecutionParameters(); // return initialized flag
 		}
 
 	}
@@ -285,16 +279,6 @@ public class InverterEnvironmentOperator
 		public static EnvironmentSettings getEnvironmentSettingsA()
 		{
 			EnvironmentSettings settings = new EnvironmentSettings();
-			settings.odeMinimumStepSize = .5E-9;
-			settings.odeMaximumStepSize = .5E-5;
-			settings.odeSolverAbsoluteTolerance = 1.0e-7;
-			settings.odeRelativeTolerance = 1.0e-12;
-			settings.eventHandlerMaximumCheckInterval = .0000000001;
-			settings.eventHandlerConvergenceThreshold = .0000000001;
-			settings.maxEventHandlerIterations = 22;
-			settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
-			settings.domainPriority = DomainPriority.JUMP;
-			settings.storeNonPrimativeData = false;
 			return settings;
 		}
 
@@ -306,13 +290,13 @@ public class InverterEnvironmentOperator
 		public static EnvironmentSettings getEnvironmentSettingsB()
 		{
 			EnvironmentSettings settings = new EnvironmentSettings();
-			settings.odeMinimumStepSize = .5E-8;
-			settings.odeMaximumStepSize = .5E-4;
-			settings.odeSolverAbsoluteTolerance = 1.0e-6;
-			settings.odeRelativeTolerance = 1.0e-10;
-			settings.eventHandlerMaximumCheckInterval = .1e-10;
-			settings.eventHandlerConvergenceThreshold = .1e-5;
-			settings.maxEventHandlerIterations = 25;
+			settings.odeMinimumStepSize = .5E-9;
+			settings.odeMaximumStepSize = .5E-5;
+			settings.odeSolverAbsoluteTolerance = 1.0e-7;
+			settings.odeRelativeTolerance = 1.0e-12;
+			settings.eventHandlerMaximumCheckInterval = .1e-16;
+			settings.eventHandlerConvergenceThreshold = .1e-8;
+			settings.maxEventHandlerIterations = 50;
 			settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 			settings.domainPriority = DomainPriority.JUMP;
 			settings.storeNonPrimativeData = false;
@@ -466,30 +450,67 @@ public class InverterEnvironmentOperator
 
 	public static Figure generateQuadFigure(TrajectorySet solution)
 	{
-		Figure figure = new Figure(1200, 1200);
+		Figure figure = new Figure(1000, 600);
 
-		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC");
-		ChartPanel sA = ChartUtils.createPanel(solution, HybridTime.TIME, "p");
-		ChartPanel tA = ChartUtils.createPanel(solution, HybridTime.TIME, "q");
-		ChartPanel pV = ChartUtils.createPanel(solution, HybridTime.TIME, "iL");
-		ChartPanel sV = ChartUtils.createPanel(solution, HybridTime.TIME, "vC");
-		ChartPanel tV = ChartUtils.createPanel(solution, HybridTime.TIME, "tau");
+		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "xPosition");
+		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
+		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "xVelocity");
+		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
 
-		figure.addComponent(1, 0, pA);
-		figure.addComponent(2, 0, sA);
-		figure.addComponent(3, 0, tA);
-		figure.addComponent(1, 1, pV);
-		figure.addComponent(2, 1, sV);
-		figure.addComponent(3, 1, tV);
+		figure.addComponent(0, 0, xPos);
+		figure.addComponent(0, 1, xVel);
+		figure.addComponent(1, 0, yPos);
+		figure.addComponent(1, 1, yVel);
 
-		ChartUtils.configureLabels(pA, "iL", "vC", null, false);
-		ChartUtils.configureLabels(sA, "Time (sec)", "p", null, false);
-		ChartUtils.configureLabels(tA, "Time (sec)", "q", null, false);
-		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
-		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
-		ChartUtils.configureLabels(tV, "Time (sec)", "tau", null, false);
+		ChartUtils.configureLabels(xPos, "Time (sec)", "X Position (m)", null, true);
+		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
+		ChartUtils.configureLabels(xVel, "Time (sec)", "X Velocity (m/s)", null, false);
+		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
 
-		figure.getTitle().setText("Hybrid Inverter Simulation Results");
+		figure.getTitle().setText("Bouncing Ball Simulation: Full State");
 		return figure;
 	}
+
+	public static Figure generateVerticalFigure(TrajectorySet solution)
+	{
+		Figure figure = new Figure(1000, 600);
+
+		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
+		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
+
+		figure.addComponent(0, 0, yPos);
+		figure.addComponent(0, 1, yVel);
+
+		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
+		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
+
+		figure.getTitle().setText("Bouncing Ball Simulation: Vertical State");
+
+		return figure;
+	}
+
+	public static Figure generateFigure(TrajectorySet solution)
+	{
+		Figure figure = new Figure(1000, 1000);
+
+		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "xPosition");
+		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
+		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "xVelocity");
+		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
+
+		JPanel grid = Figure.createSubPanel(new GridLayout(2, 1));
+		grid.add(yPos);
+		grid.add(yVel);
+		figure.addComponent(0, 0, xPos);
+		figure.addComponent(1, 0, grid);
+
+		ChartUtils.configureLabels(xPos, "Time (sec)", "X Position (m)", null, true);
+		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
+		ChartUtils.configureLabels(xVel, "Time (sec)", "X Velocity (m/s)", null, false);
+		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
+
+		figure.getTitle().setText("Bouncing Ball Simulation");
+		return figure;
+	}
+
 }

@@ -100,11 +100,9 @@ public class ConsoleSettingConfig
 	}
 
 	/**
-	 * Attempt to configure console
-	 * 
-	 * @return true is configuration is successfull
+	 * /** Attempt to configure console
 	 */
-	public static boolean configureConsole()
+	public static void configureConsole()
 	{
 		ConsoleSettings consoleSettings = Console.getSettings(); // fetch default
 		try
@@ -117,11 +115,6 @@ public class ConsoleSettingConfig
 
 		Console.setSettings(consoleSettings); // store specified settings
 
-		return true; // return initialized flag
 	}
 
-	/**
-	 * Automatically attempt to configure console
-	 */
-	public static final boolean consoleConfigured = configureConsole();
 }
