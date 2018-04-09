@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'java-library'
+
+repositories {
+	jcenter()
+	maven { url "https://jitpack.io" } // github
+}
+
+configurations.all {
+	// Uncomment to check for updates every build
+	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+dependencies {
+    // HSE
+	compile 'com.github.HybridSystemsEnvironment:HybridSystemsEnvironment:-SNAPSHOT'
+    
+    // Test
+	testCompile group: 'junit', name: 'junit', version: '4.9'
+}
+
+
+ 
