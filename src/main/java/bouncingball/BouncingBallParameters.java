@@ -2,11 +2,24 @@ package bouncingball;
 
 import edu.ucsc.cross.hse.core.modeling.DataStructure;
 
+/**
+ * Bouncing ball parameter class
+ * 
+ * @author Brendan Short
+ *
+ */
 public class BouncingBallParameters extends DataStructure
 {
 
-	public double restitutionCoefficient; // restitution of coeficcient
-	public double gravityConstant; // gravity constant
+	/**
+	 * Coefficient of restitution
+	 */
+	public double restitutionCoefficient;
+
+	/**
+	 * Gravity constant
+	 */
+	public double gravityConstant;
 
 	/**
 	 * Construct the parameters of the bouncing ball environment

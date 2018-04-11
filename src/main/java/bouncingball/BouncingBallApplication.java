@@ -16,9 +16,21 @@ import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
 import edu.ucsc.cross.hse.core.variable.RandomVariable;
 
+/**
+ * Bouncing ball application setup class
+ * 
+ * @author Brendan Short
+ *
+ */
 public class BouncingBallApplication
 {
 
+	/**
+	 * Main method for running the bouncing ball application
+	 * 
+	 * @param args
+	 *            none
+	 */
 	public static void main(String args[])
 	{
 		loadBouncingBallConsoleSettings();

@@ -5,10 +5,22 @@ import edu.ucsc.cross.hse.core.modeling.DataStructure;
 public class BouncingBallState extends DataStructure
 {
 
-	public double xPosition; // horizontal position
-	public double yPosition; // vertical position
-	public double xVelocity; // horizontal velocity
-	public double yVelocity; // vertical velocity
+	/**
+	 * horizontal position
+	 */
+	public double xPosition;
+	/**
+	 * vertical position
+	 */
+	public double yPosition;
+	/**
+	 * horizontal velocity
+	 */
+	public double xVelocity;
+	/**
+	 * vertical velocity
+	 */
+	public double yVelocity;
 
 	/**
 	 * Construct the state with the given initial conditions
