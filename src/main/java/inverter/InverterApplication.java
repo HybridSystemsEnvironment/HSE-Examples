@@ -49,7 +49,8 @@ public class InverterApplication
 		SystemSet systems = new SystemSet(generateInverterSystem(60.0, 1.0, 0.1, 6.66e-5, 220.0, .05, 120.0, 1.0, 1.0,
 		60.0, 120 * 6.66e-5 * 60.0 * 2 * Math.PI, 0.0));
 		ExecutionParameters parameters = getBouncingBallExeParameters();
-		EnvironmentSettings settings = getBouncingBallEnvSettings();
+
+		EnvironmentSettings settings = getInverterEnvSettings();
 
 		environment = HSEnvironment.create(systems, parameters, settings);
 
@@ -65,26 +66,26 @@ public class InverterApplication
 	{
 		ExecutionParameters parameters = new ExecutionParameters();
 		parameters.maximumJumps = 4000000;
-		parameters.maximumTime = 0.3;
-		parameters.dataPointInterval = .005;
+		parameters.maximumTime = 0.12;
+		parameters.dataPointInterval = .00005;
 		return parameters;
 	}
 
 	/**
-	 * Initializes environment settings with configuration B
+	 * Initializes environment settings
 	 * 
-	 * @return EnvironmentSettings
+	 * @return environment settings
 	 */
-	public static EnvironmentSettings getBouncingBallEnvSettings()
+	public static EnvironmentSettings getInverterEnvSettings()
 	{
 		EnvironmentSettings settings = new EnvironmentSettings();
-		settings.odeMinimumStepSize = .5E-9;
-		settings.odeMaximumStepSize = .5E-5;
-		settings.odeSolverAbsoluteTolerance = 1.0e-7;
-		settings.odeRelativeTolerance = 1.0e-12;
-		settings.eventHandlerMaximumCheckInterval = .0000000001;
-		settings.eventHandlerConvergenceThreshold = .0000000001;
-		settings.maxEventHandlerIterations = 22;
+		settings.odeMinimumStepSize = 1E-9;
+		settings.odeMaximumStepSize = 1E-6;
+		settings.odeSolverAbsoluteTolerance = 1E-6;
+		settings.odeRelativeTolerance = 1E-6;
+		settings.eventHandlerMaximumCheckInterval = 1E-6;
+		settings.eventHandlerConvergenceThreshold = 1E-9;
+		settings.maxEventHandlerIterations = 100;
 		settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 		settings.domainPriority = DomainPriority.JUMP;
 		settings.storeNonPrimativeData = false;

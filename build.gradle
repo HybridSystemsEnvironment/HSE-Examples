@@ -4,6 +4,9 @@ apply plugin: 'java-library'
 repositories {
 	jcenter()
 	maven { url "https://jitpack.io" } // github
+	  flatDir {
+       dirs 'libs'
+   }
 }
 
 configurations.all {
@@ -14,7 +17,7 @@ configurations.all {
 dependencies {
     // HSE
 	compile 'com.github.HybridSystemsEnvironment:HybridSystemsEnvironment:-SNAPSHOT'
-    
+
     // Test
 	testCompile group: 'junit', name: 'junit', version: '4.9'
 }

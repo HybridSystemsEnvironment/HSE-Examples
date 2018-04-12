@@ -48,7 +48,7 @@ public class BouncingBallApplication
 	public static HSEnvironment generateEnvironment()
 	{
 		HSEnvironment environment = new HSEnvironment();
-		SystemSet systems = getBouncingBallSystems();
+		SystemSet systems = generateBouncingBallSystems(.99, 9.81, 300, 0, 3, 1, 2, 1, 3, 1, 2);
 		ExecutionParameters parameters = getBouncingBallExeParameters();
 		EnvironmentSettings settings = getBouncingBallEnvSettings();
 
@@ -58,30 +58,15 @@ public class BouncingBallApplication
 	}
 
 	/**
-	 * Get the set of bouncing ball systems (extra function to define different
-	 * configurations that can be toggled by comment)
+	 * Initializes execution parameters
 	 * 
-	 * @return system set of bouncing balls
-	 */
-	public static SystemSet getBouncingBallSystems()
-	{
-		//params: restitution gravity quantity xPosMin xPosMax xVelMin xVelMax  yPosMin yPosMax yVelMin yVelMax
-
-		//return generateBouncingBallSystems(.97, 9.81, 1, 0, 0, 2, 2, 2, 2, 1, 1); // 1 ball fixed
-		//return generateBouncingBallSystems(.99, 9.81, 1, 0, 3, 1, 2, 1, 3, 1, 2); // 1 ball random
-		return generateBouncingBallSystems(.99, 9.81, 3, 0, 3, 1, 2, 1, 3, 1, 2); // 3 balls random
-	}
-
-	/**
-	 * Initializes execution parameters with configuration B
-	 * 
-	 * @return ExecutionParameters
+	 * @return Execution parameters
 	 */
 	public static ExecutionParameters getBouncingBallExeParameters()
 	{
 		ExecutionParameters parameters = new ExecutionParameters();
 		parameters.maximumJumps = 10000;
-		parameters.maximumTime = 8;
+		parameters.maximumTime = 25;
 		parameters.dataPointInterval = .1;
 		return parameters;
 	}
@@ -94,12 +79,23 @@ public class BouncingBallApplication
 	public static EnvironmentSettings getBouncingBallEnvSettings()
 	{
 		EnvironmentSettings settings = new EnvironmentSettings();
-		settings.odeMinimumStepSize = 1e-5;
+		settings.odeMinimumStepSize = 1e-12;
 		settings.odeMaximumStepSize = 1e-3;
 		settings.odeSolverAbsoluteTolerance = 1.0e-8;
 		settings.odeRelativeTolerance = 1.0e-8;
 		settings.eventHandlerMaximumCheckInterval = 1e-6;
-		settings.eventHandlerConvergenceThreshold = 1e-9;
+		settings.eventHandlerConvergenceThreshold = 1e-19;
+		settings.maxEventHandlerIterations = 100;
+		settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
+		settings.domainPriority = DomainPriority.JUMP;
+		settings.storeNonPrimativeData = false;
+
+		settings.odeMinimumStepSize = 1E-9;
+		settings.odeMaximumStepSize = 1E-3;
+		settings.odeSolverAbsoluteTolerance = 1E-6;
+		settings.odeRelativeTolerance = 1E-6;
+		settings.eventHandlerMaximumCheckInterval = 1E-3;
+		settings.eventHandlerConvergenceThreshold = 1E-9;
 		settings.maxEventHandlerIterations = 100;
 		settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 		settings.domainPriority = DomainPriority.JUMP;
