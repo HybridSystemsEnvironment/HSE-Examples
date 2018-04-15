@@ -2,18 +2,18 @@ package consensus;
 
 import java.util.ArrayList;
 
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
-import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
-import edu.ucsc.cross.hse.core.environment.ExecutionParameters;
+import edu.ucsc.cross.hse.core.environment.HSESettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
+import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
-import edu.ucsc.cross.hse.core.modeling.SystemSet;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
-import edu.ucsc.cross.hse.core.specification.IntegratorType;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
 import network.BasicNetwork;
@@ -44,46 +44,39 @@ public class ConsensusApplication
 	{
 		HSEnvironment environment = new HSEnvironment();
 		SystemSet systems = generateConsensusAgentSystems(25, 5, false, .4, .3, .3, 1.0);
-		ExecutionParameters parameters = getConsensusExeParameters();
-		EnvironmentSettings settings = getBouncingBallEnvSettings();
+		HSESettings settings = getBouncingBallEnvSettings();
 
-		environment = HSEnvironment.create(systems, parameters, settings);
+		environment = HSEnvironment.create(systems, settings);
 
 		return environment;
 	}
 
 	/**
-	 * Initializes execution parameters
+	 * Initializes environment settings with configuration B
 	 * 
-	 * @return execution parameters
+	 * @return EnvironmentSettings
 	 */
-	public static ExecutionParameters getConsensusExeParameters()
+	public static HSESettings getBouncingBallEnvSettings()
 	{
-		ExecutionParameters parameters = new ExecutionParameters();
-		parameters.maximumJumps = 4000000;
-		parameters.maximumTime = 10.0;
-		parameters.dataPointInterval = .05;
-		return parameters;
-	}
+		HSESettings settings = new HSESettings();
 
-	/**
-	 * Initializes environment settings
-	 * 
-	 * @return environment settings
-	 */
-	public static EnvironmentSettings getBouncingBallEnvSettings()
-	{
-		EnvironmentSettings settings = new EnvironmentSettings();
-		settings.odeMinimumStepSize = 1E-9;
-		settings.odeMaximumStepSize = 1E-3;
-		settings.odeSolverAbsoluteTolerance = 1E-6;
-		settings.odeRelativeTolerance = 1E-6;
+		settings.maximumJumps = 10000;
+		settings.maximumTime = 25;
+		settings.dataPointInterval = .001;
 		settings.eventHandlerMaximumCheckInterval = 1E-3;
 		settings.eventHandlerConvergenceThreshold = 1E-9;
 		settings.maxEventHandlerIterations = 100;
-		settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 		settings.domainPriority = DomainPriority.JUMP;
 		settings.storeNonPrimativeData = false;
+
+		double odeMaximumStepSize = 1e-3;
+		double odeMinimumStepSize = 1e-9;
+		double odeRelativeTolerance = 1.0e-6;
+		double odeSolverAbsoluteTolerance = 1.0e-6;
+		FirstOrderIntegrator defaultIntegrator = new DormandPrince853Integrator(odeMinimumStepSize, odeMaximumStepSize,
+		odeRelativeTolerance, odeSolverAbsoluteTolerance);
+		settings.integrator = defaultIntegrator;
+
 		return settings;
 	}
 

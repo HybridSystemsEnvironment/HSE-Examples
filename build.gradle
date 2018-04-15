@@ -18,6 +18,9 @@ dependencies {
     // HSE
 	compile 'com.github.HybridSystemsEnvironment:HybridSystemsEnvironment:-SNAPSHOT'
 
+	// Stock Market API
+	compile group: 'pl.zankowski', name: 'iextrading4j-all', version: '2.1.1'
+	
     // Test
 	testCompile group: 'junit', name: 'junit', version: '4.9'
 }

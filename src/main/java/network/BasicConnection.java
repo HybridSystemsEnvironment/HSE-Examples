@@ -16,6 +16,7 @@ public class BasicConnection<T>
 	 * Source vertex
 	 */
 	private T source;
+
 	/*
 	 * Target vertex
 	 */

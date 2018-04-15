@@ -1,17 +1,17 @@
 package bouncingball;
 
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
-import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
-import edu.ucsc.cross.hse.core.environment.ExecutionParameters;
+import edu.ucsc.cross.hse.core.environment.HSESettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
+import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
-import edu.ucsc.cross.hse.core.modeling.SystemSet;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
-import edu.ucsc.cross.hse.core.specification.IntegratorType;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
 import edu.ucsc.cross.hse.core.variable.RandomVariable;
@@ -48,27 +48,13 @@ public class BouncingBallApplication
 	public static HSEnvironment generateEnvironment()
 	{
 		HSEnvironment environment = new HSEnvironment();
-		SystemSet systems = generateBouncingBallSystems(.99, 9.81, 300, 0, 3, 1, 2, 1, 3, 1, 2);
-		ExecutionParameters parameters = getBouncingBallExeParameters();
-		EnvironmentSettings settings = getBouncingBallEnvSettings();
+		SystemSet systems = generateBouncingBallSystems(.99, 9.81, 3, 0, 3, 1, 2, 1, 3, 1, 2);
 
-		environment = HSEnvironment.create(systems, parameters, settings);
+		HSESettings settings = getBouncingBallEnvSettings();
+
+		environment = HSEnvironment.create(systems, settings);
 
 		return environment;
-	}
-
-	/**
-	 * Initializes execution parameters
-	 * 
-	 * @return Execution parameters
-	 */
-	public static ExecutionParameters getBouncingBallExeParameters()
-	{
-		ExecutionParameters parameters = new ExecutionParameters();
-		parameters.maximumJumps = 10000;
-		parameters.maximumTime = 25;
-		parameters.dataPointInterval = .1;
-		return parameters;
 	}
 
 	/**
@@ -76,30 +62,27 @@ public class BouncingBallApplication
 	 * 
 	 * @return EnvironmentSettings
 	 */
-	public static EnvironmentSettings getBouncingBallEnvSettings()
+	public static HSESettings getBouncingBallEnvSettings()
 	{
-		EnvironmentSettings settings = new EnvironmentSettings();
-		settings.odeMinimumStepSize = 1e-12;
-		settings.odeMaximumStepSize = 1e-3;
-		settings.odeSolverAbsoluteTolerance = 1.0e-8;
-		settings.odeRelativeTolerance = 1.0e-8;
-		settings.eventHandlerMaximumCheckInterval = 1e-6;
-		settings.eventHandlerConvergenceThreshold = 1e-19;
-		settings.maxEventHandlerIterations = 100;
-		settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
-		settings.domainPriority = DomainPriority.JUMP;
-		settings.storeNonPrimativeData = false;
+		HSESettings settings = new HSESettings();
 
-		settings.odeMinimumStepSize = 1E-9;
-		settings.odeMaximumStepSize = 1E-3;
-		settings.odeSolverAbsoluteTolerance = 1E-6;
-		settings.odeRelativeTolerance = 1E-6;
+		settings.maximumJumps = 10000;
+		settings.maximumTime = 25;
+		settings.dataPointInterval = .001;
 		settings.eventHandlerMaximumCheckInterval = 1E-3;
 		settings.eventHandlerConvergenceThreshold = 1E-9;
 		settings.maxEventHandlerIterations = 100;
-		settings.integratorType = IntegratorType.DORMAND_PRINCE_853;
 		settings.domainPriority = DomainPriority.JUMP;
 		settings.storeNonPrimativeData = false;
+
+		double odeMaximumStepSize = 1e-3;
+		double odeMinimumStepSize = 1e-9;
+		double odeRelativeTolerance = 1.0e-6;
+		double odeSolverAbsoluteTolerance = 1.0e-6;
+		FirstOrderIntegrator defaultIntegrator = new DormandPrince853Integrator(odeMinimumStepSize, odeMaximumStepSize,
+		odeRelativeTolerance, odeSolverAbsoluteTolerance);
+		settings.integrator = defaultIntegrator;
+
 		return settings;
 	}
 
@@ -178,7 +161,7 @@ public class BouncingBallApplication
 	{
 		Figure figure = new Figure(1000, 600);
 
-		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "xPosition");
+		ChartPanel xPos = ChartUtils.createPanel(solution, "xPosition", HybridTime.JUMP);
 		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
 		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "xVelocity");
 		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
