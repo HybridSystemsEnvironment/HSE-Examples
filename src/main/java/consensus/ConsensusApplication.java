@@ -1,9 +1,5 @@
 package consensus;
 
-import java.util.ArrayList;
-
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
@@ -11,15 +7,21 @@ import edu.ucsc.cross.hse.core.environment.HSESettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
+import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
-import network.BasicNetwork;
 
-public class ConsensusApplication
-{
+/**
+ * The main class of the consensus network application that prepares and
+ * operates the environment, and generates figure(s).
+ * 
+ * @author Brendan Short
+ *
+ */
+public class ConsensusApplication {
 
 	/**
 	 * Main method for running application
@@ -27,12 +29,13 @@ public class ConsensusApplication
 	 * @param args
 	 *            none
 	 */
-	public static void main(String args[])
-	{
-		loadConsensusConsoleSettings();
+	public static void main(String args[]) {
+		// Generate environment
 		HSEnvironment environment = generateEnvironment();
-		environment.run();
-		generateFullStateFigure(environment.getTrajectories()).display();
+		// Run simulation and store result trajectories
+		TrajectorySet trajectories = environment.run();
+		// Generate figure and display in window
+		generateFullStateFigure(trajectories).display();
 	}
 
 	/**
@@ -40,53 +43,51 @@ public class ConsensusApplication
 	 * 
 	 * @return environment
 	 */
-	public static HSEnvironment generateEnvironment()
-	{
+	public static HSEnvironment generateEnvironment() {
 		HSEnvironment environment = new HSEnvironment();
-		SystemSet systems = generateConsensusAgentSystems(25, 5, false, .4, .3, .3, 1.0);
+		SystemSet systems = generateConsensusAgentSystems(10, 5, false, .3, .3, 1.0);
 		HSESettings settings = getBouncingBallEnvSettings();
-
 		environment = HSEnvironment.create(systems, settings);
-
 		return environment;
 	}
 
 	/**
-	 * Initializes environment settings with configuration B
+	 * Creates the configured environment settings
 	 * 
 	 * @return EnvironmentSettings
 	 */
-	public static HSESettings getBouncingBallEnvSettings()
-	{
+	public static HSESettings getBouncingBallEnvSettings() {
+		// Load console settings
+		loadConsensusConsoleSettings();
+		// Create engine settings
 		HSESettings settings = new HSESettings();
-
+		// Specify general parameter values
 		settings.maximumJumps = 10000;
 		settings.maximumTime = 25;
-		settings.dataPointInterval = .001;
+		settings.dataPointInterval = .5;
 		settings.eventHandlerMaximumCheckInterval = 1E-3;
 		settings.eventHandlerConvergenceThreshold = 1E-9;
 		settings.maxEventHandlerIterations = 100;
 		settings.domainPriority = DomainPriority.JUMP;
 		settings.storeNonPrimativeData = false;
-
-		double odeMaximumStepSize = 1e-3;
-		double odeMinimumStepSize = 1e-9;
+		// Specify integrator parameter values
+		double odeMaximumStepSize = 1e-1;
+		double odeMinimumStepSize = 1e-3;
 		double odeRelativeTolerance = 1.0e-6;
 		double odeSolverAbsoluteTolerance = 1.0e-6;
-		FirstOrderIntegrator defaultIntegrator = new DormandPrince853Integrator(odeMinimumStepSize, odeMaximumStepSize,
-		odeRelativeTolerance, odeSolverAbsoluteTolerance);
-		settings.integrator = defaultIntegrator;
-
+		// Create and store integrator factory
+		settings.integrator = new DormandPrince853IntegratorFactory(odeMinimumStepSize, odeMaximumStepSize,
+				odeRelativeTolerance, odeSolverAbsoluteTolerance);
+		// Return configured settings
 		return settings;
 	}
 
 	/**
-	 * Initializes and loads console settings
+	 * Creates and loads console settings
 	 * 
 	 * @return console settings
 	 */
-	public static void loadConsensusConsoleSettings()
-	{
+	public static boolean loadConsensusConsoleSettings() {
 		ConsoleSettings console = new ConsoleSettings();
 		console.printStatusInterval = 10.0;
 		console.printProgressIncrement = 10;
@@ -98,6 +99,7 @@ public class ConsensusApplication
 		console.printLogToFile = true;
 		console.terminateAtInput = true;
 		Console.setSettings(console);
+		return true;
 	}
 
 	/**
@@ -111,7 +113,7 @@ public class ConsensusApplication
 	 *            flag indicating synchronous if true, or asynchronous if false
 	 * @param flow_gain
 	 *            flow gain constant for the control law
-	 * @param jump_gain
+	 * @param controller_gain
 	 *            jump gain constant for the control law
 	 * @param minimum_comm
 	 *            minimum duration between communication events
@@ -120,60 +122,23 @@ public class ConsensusApplication
 	 * @return set of agent systems
 	 */
 	public static SystemSet generateConsensusAgentSystems(int num_nodes, int num_connections, boolean synchronous,
-	double jump_gain, double flow_gain, double min_communication_time, double max_communication_time)
-	{
+			double controller_gain, double min_communication_time, double max_communication_time) {
 
 		SystemSet systems = new SystemSet();
-		BasicNetwork<ConsensusAgentState> network = new BasicNetwork<ConsensusAgentState>();
-		ConsensusParameters params = new ConsensusParameters(flow_gain, jump_gain, min_communication_time,
-		max_communication_time, synchronous);
+		ConsensusNetwork network = new ConsensusNetwork();
+		ConsensusParameters params = new ConsensusParameters(controller_gain, min_communication_time,
+				max_communication_time, synchronous);
 
-		for (int i = 0; i < num_nodes; i++)
-		{
+		for (int i = 0; i < num_nodes; i++) {
 			ConsensusAgentState agent = new ConsensusAgentState(Math.random(), Math.random(), Math.random() + .05);
-			network.topology.addVertex(agent);
-			ConsensusAgentSystem system = new ConsensusAgentSystem(agent, network, params);
+			ConsensusAgentSystem system = new ConsensusAgentSystem(agent, network.getNetwork(), params);
 			systems.add(system);
-
 		}
 
-		connectAgentsRandomly(network, num_connections);
+		network.connectAgentsRandomly(systems, num_connections);
 
 		return systems;
 
-	}
-
-	/**
-	 * Connects each agent in a network to a specified number of other agents at
-	 * random
-	 * 
-	 * @param network
-	 *            network containing all agents as vertices
-	 * @param num_connections
-	 *            number of connections to assign to each agent
-	 */
-	public static void connectAgentsRandomly(BasicNetwork<ConsensusAgentState> network, int num_connections)
-	{
-		ArrayList<ConsensusAgentState> conns = new ArrayList<ConsensusAgentState>(network.getAllVertices());
-
-		for (ConsensusAgentState node : network.getAllVertices())
-		{
-			for (int coni = 0; coni < num_connections; coni++)
-			{
-				ConsensusAgentState connect = conns.get(0);
-				while (connect.equals(node))
-				{
-					connect = conns.get(Math.round(conns.size()) - 1);
-				}
-				network.establishConnection(node, connect);
-				conns.remove(connect);
-				if (conns.size() <= 1)
-				{
-					conns.clear();
-					conns.addAll(network.getAllVertices());
-				}
-			}
-		}
 	}
 
 	/**
@@ -183,8 +148,7 @@ public class ConsensusApplication
 	 *            trajectory set containing data to load into figure
 	 * @return a figure displaying all state elements
 	 */
-	public static Figure generateFullStateFigure(TrajectorySet solution)
-	{
+	public static Figure generateFullStateFigure(TrajectorySet solution) {
 		Figure figure = new Figure(800, 600);
 
 		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "systemValue");
@@ -201,4 +165,5 @@ public class ConsensusApplication
 
 		return figure;
 	}
+
 }

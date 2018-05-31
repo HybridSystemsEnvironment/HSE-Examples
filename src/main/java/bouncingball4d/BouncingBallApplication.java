@@ -1,4 +1,4 @@
-package bouncingball;
+package bouncingball4d;
 
 import org.jfree.chart.ChartPanel;
 
@@ -36,7 +36,9 @@ public class BouncingBallApplication {
 		// Run simulation and store result trajectories
 		TrajectorySet trajectories = environment.run();
 		// Generate figure and display in window
-		generateVerticalStateFigure(trajectories).display();
+		generateVerticalStateFigure(environment.getTrajectories()).display();
+		// Generate figure and display in window
+		generateFullStateFigure(trajectories).display();
 	}
 
 	/**
@@ -46,7 +48,7 @@ public class BouncingBallApplication {
 	 */
 	public static HSEnvironment generateEnvironment() {
 		// Generate bouncing ball systems
-		SystemSet systems = generateBouncingBallSystems(3, .99, 9.81, 2, 5, -1, 1);
+		SystemSet systems = generateBouncingBallSystems(.99, 9.81, 3, 0, 3, 1, 2, 1, 3, 1, 2);
 		// Create configured settings
 		HSESettings settings = getEnvironmentSettings();
 		// Create loaded environment
@@ -68,7 +70,7 @@ public class BouncingBallApplication {
 		// Specify general parameter values
 		settings.maximumJumps = 10000;
 		settings.maximumTime = 25;
-		settings.dataPointInterval = .05;
+		settings.dataPointInterval = .5;
 		settings.eventHandlerMaximumCheckInterval = 1E-3;
 		settings.eventHandlerConvergenceThreshold = 1E-9;
 		settings.maxEventHandlerIterations = 100;
@@ -111,33 +113,74 @@ public class BouncingBallApplication {
 	/**
 	 * Generate a set of bouncing ball systems
 	 * 
-	 * @param quantity
-	 *            number of bouncing ball systems to generate
 	 * @param restitution_coefficient
 	 *            restitution coefficient value
 	 * @param gravity_constant
 	 *            gravity constant value
+	 * @param quantity
+	 *            number of bouncing ball systems to generate
+	 * @param min_x_pos
+	 *            minimum possible x position to generate
+	 * @param max_x_pos
+	 *            maximum possible x position to generate
 	 * @param min_y_pos
 	 *            minimum possible y position to generate
 	 * @param max_y_pos
 	 *            maximum possible y position to generate
+	 * @param min_x_vel
+	 *            minimum velsible x velocity to generate
+	 * @param max_x_vel
+	 *            maximum velsible x velocity to generate
 	 * @param min_y_vel
 	 *            minimum velsible y velocity to generate
 	 * @param max_y_vel
 	 *            maximum velsible y velocity to generate
 	 * @return system set containing all generated bouncing ball systems
 	 */
-	public static SystemSet generateBouncingBallSystems(int quantity, double restitution_coefficient,
-			double gravity_constant, double min_y_pos, double max_y_pos, double min_y_vel, double max_y_vel) {
+	public static SystemSet generateBouncingBallSystems(double restitution_coefficient, double gravity_constant,
+			int quantity, double min_x_pos, double max_x_pos, double min_y_pos, double max_y_pos, double min_x_vel,
+			double max_x_vel, double min_y_vel, double max_y_vel) {
 		SystemSet systems = new SystemSet();
 		BouncingBallParameters physics = new BouncingBallParameters(restitution_coefficient, gravity_constant);
 		for (int ballNum = 0; ballNum < quantity; ballNum++) {
 			BouncingBallState state = new BouncingBallState(RandomVariable.generate(min_y_pos, max_y_pos),
+					RandomVariable.generate(min_x_pos, max_x_pos), RandomVariable.generate(min_y_vel, max_y_vel),
 					RandomVariable.generate(min_y_vel, max_y_vel));
 			BouncingBallSystem ballSystem = new BouncingBallSystem(state, physics);
 			systems.add(ballSystem);
 		}
 		return systems;
+	}
+
+	/**
+	 * Generate a figure with all four bouncing ball state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all four bouncing ball state elements
+	 */
+	public static Figure generateFullStateFigure(TrajectorySet solution) {
+		// Create figure w:1000 h:600
+		Figure figure = new Figure(1000, 600);
+		// Assign title to figure
+		figure.getTitle().setText("Bouncing Ball Simulation");
+		// Create charts
+		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "xPosition");
+		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
+		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "xVelocity");
+		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(xPos, "Time (sec)", "X Position (m)", null, false);
+		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
+		ChartUtils.configureLabels(xVel, "Time (sec)", "X Velocity (m/s)", null, false);
+		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
+		// Add charts to figure
+		figure.addComponent(0, 0, xPos);
+		figure.addComponent(0, 1, xVel);
+		figure.addComponent(1, 0, yPos);
+		figure.addComponent(1, 1, yVel);
+		// Return generated figure
+		return figure;
 	}
 
 	/**
@@ -152,7 +195,7 @@ public class BouncingBallApplication {
 		// Create figure w:1000 h:600
 		Figure figure = new Figure(1000, 600);
 		// Assign title to figure
-		figure.getTitle().setText("Bouncing Ball Simulation");
+		figure.getTitle().setText("Bouncing Ball Simulation: Vertical States");
 		// Create charts
 		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
 		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");

@@ -1,5 +1,7 @@
 package network;
 
+import edu.ucsc.cross.hse.core.modeling.DataStructure;
+
 /**
  * The basic connection is a graph edge that directly connects two objects of
  * class T.
@@ -9,8 +11,7 @@ package network;
  * @param <T>
  *            The class type of the vertices that are to be connected
  */
-public class BasicConnection<T>
-{
+public class DirectConnection<T> extends DataStructure {
 
 	/*
 	 * Source vertex
@@ -30,8 +31,7 @@ public class BasicConnection<T>
 	 * @param targetVertex
 	 *            end vertex
 	 */
-	public BasicConnection(T sourceVertex, T targetVertex)
-	{
+	public DirectConnection(T sourceVertex, T targetVertex) {
 		this.source = sourceVertex;
 		this.target = targetVertex;
 
@@ -42,8 +42,7 @@ public class BasicConnection<T>
 	 * 
 	 * @return source vertex
 	 */
-	public T getSource()
-	{
+	public T getSource() {
 		return source;
 	}
 
@@ -52,8 +51,7 @@ public class BasicConnection<T>
 	 * 
 	 * @return target vertex
 	 */
-	public T getTarget()
-	{
+	public T getTarget() {
 		return target;
 	}
 

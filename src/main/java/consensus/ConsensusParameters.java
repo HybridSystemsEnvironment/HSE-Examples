@@ -6,18 +6,12 @@ package consensus;
  * @author Brendan Short
  *
  */
-public class ConsensusParameters
-{
-
-	/**
-	 * Flow gain constant for the control law
-	 */
-	public Double flowGain;
+public class ConsensusParameters {
 
 	/**
 	 * Jump gain constant for the control law
 	 */
-	public Double jumpGain;
+	public Double controllerGain;
 
 	/**
 	 * Minimum duration between communication events
@@ -40,7 +34,7 @@ public class ConsensusParameters
 	 * 
 	 * @param flow_gain
 	 *            flow gain constant for the control law
-	 * @param jump_gain
+	 * @param controller_gain
 	 *            jump gain constant for the control law
 	 * @param minimum_comm
 	 *            minimum duration between communication events
@@ -48,11 +42,8 @@ public class ConsensusParameters
 	 *            maximum duration between communication events
 	 * @param synchronous
 	 */
-	public ConsensusParameters(Double flow_gain, Double jump_gain, Double minimum_comm, Double maximum_comm,
-	boolean synchronous)
-	{
-		this.flowGain = flow_gain;
-		this.jumpGain = jump_gain;
+	public ConsensusParameters(Double controller_gain, Double minimum_comm, Double maximum_comm, boolean synchronous) {
+		this.controllerGain = controller_gain;
 		this.minimumCommunicationInterval = minimum_comm;
 		this.maximumCommunicationInterval = maximum_comm;
 		this.synchronous = synchronous;

@@ -1,7 +1,5 @@
 package inverter;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
@@ -9,6 +7,8 @@ import edu.ucsc.cross.hse.core.environment.HSESettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
+import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
+import edu.ucsc.cross.hse.core.integrator.FirstOrderIntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
@@ -21,8 +21,7 @@ import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
  * @author Brendan Short
  *
  */
-public class InverterApplication
-{
+public class InverterApplication {
 
 	/**
 	 * Main method for running the Inverter application
@@ -30,8 +29,7 @@ public class InverterApplication
 	 * @param args
 	 *            none
 	 */
-	public static void main(String args[])
-	{
+	public static void main(String args[]) {
 		loadConsoleSettings();
 		HSEnvironment environment = generateEnvironment();
 		environment.run();
@@ -44,11 +42,10 @@ public class InverterApplication
 	 * 
 	 * @return environment
 	 */
-	public static HSEnvironment generateEnvironment()
-	{
+	public static HSEnvironment generateEnvironment() {
 		HSEnvironment environment = new HSEnvironment();
 		SystemSet systems = new SystemSet(generateInverterSystem(60.0, 1.0, 0.1, 6.66e-5, 220.0, .05, 120.0, 1.0, 1.0,
-		60.0, 120 * 6.66e-5 * 60.0 * 2 * Math.PI, 0.0));
+				60.0, 120 * 6.66e-5 * 60.0 * 2 * Math.PI, 0.0));
 
 		HSESettings settings = getEnvironmentSettings();
 
@@ -62,8 +59,7 @@ public class InverterApplication
 	 * 
 	 * @return environment settings
 	 */
-	public static HSESettings getEnvironmentSettings()
-	{
+	public static HSESettings getEnvironmentSettings() {
 		HSESettings settings = new HSESettings();
 		settings.maximumJumps = 4000000;
 		settings.maximumTime = 0.12;
@@ -75,11 +71,10 @@ public class InverterApplication
 		double odeMinimumStepSize = 1e-9;
 		double odeRelativeTolerance = 1.0e-6;
 		double odeSolverAbsoluteTolerance = 1.0e-6;
-		FirstOrderIntegrator defaultIntegrator = new DormandPrince853Integrator(odeMinimumStepSize, odeMaximumStepSize,
-		odeRelativeTolerance, odeSolverAbsoluteTolerance);
-		settings.integrator = defaultIntegrator;// new DormandPrince853Integrator(1.0e-3, 1.0e-9, 1.0e-6, 1.0e-6);
-
-		//settings.integrator = new EulerIntegrator(1E-8);
+		FirstOrderIntegratorFactory defaultIntegrator = new DormandPrince853IntegratorFactory(odeMinimumStepSize,
+				odeMaximumStepSize, odeRelativeTolerance, odeSolverAbsoluteTolerance);
+		settings.integrator = defaultIntegrator;
+		// settings.integrator = new EulerIntegrator(1E-8);
 		settings.domainPriority = DomainPriority.JUMP;
 		settings.storeNonPrimativeData = false;
 		settings.dataPointInterval = .00005;
@@ -91,8 +86,7 @@ public class InverterApplication
 	 * 
 	 * @return console settings
 	 */
-	public static void loadConsoleSettings()
-	{
+	public static void loadConsoleSettings() {
 		ConsoleSettings console = new ConsoleSettings();
 		console.printStatusInterval = 10.0;
 		console.printProgressIncrement = 10;
@@ -129,8 +123,7 @@ public class InverterApplication
 	 * @return
 	 */
 	public static InverterSystem generateInverterSystem(double f, double R, double L, double Cap, double V, double e,
-	double b, double p0, double q0, double vIn0, double iL0, double vC0)
-	{
+			double b, double p0, double q0, double vIn0, double iL0, double vC0) {
 		InverterParameters params = new InverterParameters(f, R, L, Cap, V, e, b);
 		InverterState state = new InverterState(p0, q0, iL0, vC0, vIn0);
 		InverterSystem invSys = new InverterSystem(state, params);
@@ -138,15 +131,14 @@ public class InverterApplication
 	}
 
 	/**
-	 * Generate a figure with the vertical (y position and velocity) bouncing
-	 * ball state elements
+	 * Generate a figure with the vertical (y position and velocity) bouncing ball
+	 * state elements
 	 * 
 	 * @param solution
 	 *            trajectory set containing data to load into figure
 	 * @return a figure displaying all vertical Inverter state elements
 	 */
-	public static Figure generateFullStateFigure(TrajectorySet solution)
-	{
+	public static Figure generateFullStateFigure(TrajectorySet solution) {
 		Figure figure = new Figure(1200, 1200);
 
 		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC");
@@ -175,15 +167,14 @@ public class InverterApplication
 	}
 
 	/**
-	 * Generate a figure with the vertical (y position and velocity) bouncing
-	 * ball state elements
+	 * Generate a figure with the vertical (y position and velocity) bouncing ball
+	 * state elements
 	 * 
 	 * @param solution
 	 *            trajectory set containing data to load into figure
 	 * @return a figure displaying all vertical Inverter state elements
 	 */
-	public static Figure generateFullStateFigureSplit(TrajectorySet solution)
-	{
+	public static Figure generateFullStateFigureSplit(TrajectorySet solution) {
 		Figure figure = new Figure(1200, 1200);
 		Figure left = new Figure(1200, 1200);
 		Figure right = new Figure(1200, 1200);

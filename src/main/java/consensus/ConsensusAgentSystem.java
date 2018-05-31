@@ -1,16 +1,15 @@
 package consensus;
 
 import edu.ucsc.cross.hse.core.modeling.HybridSystem;
-import network.BasicNetwork;
+import network.DirectNetwork;
 
 /**
- * Consensus agent system hybrid system implementation
+ * Consensus agent hybrid system implementation.
  * 
  * @author Brendan Short
  *
  */
-public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
-{
+public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 
 	/**
 	 * Consensus network parameters
@@ -20,7 +19,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 	/**
 	 * Agent connection network
 	 */
-	BasicNetwork<ConsensusAgentState> network;
+	DirectNetwork<ConsensusAgentState> network;
 
 	/**
 	 * Constructor for the agent system
@@ -32,9 +31,8 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 	 * @param params
 	 *            consensus network parameters
 	 */
-	public ConsensusAgentSystem(ConsensusAgentState state, BasicNetwork<ConsensusAgentState> network,
-	ConsensusParameters params)
-	{
+	public ConsensusAgentSystem(ConsensusAgentState state, DirectNetwork<ConsensusAgentState> network,
+			ConsensusParameters params) {
 		super(state);
 		this.params = params;
 		this.network = network;
@@ -47,10 +45,8 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 	 *            current state
 	 */
 	@Override
-	public boolean C(ConsensusAgentState x)
-	{
-		if (x.communicationTimer >= 0.0)
-		{
+	public boolean C(ConsensusAgentState x) {
+		if (x.communicationTimer >= 0.0) {
 			return true;
 		}
 		return false;
@@ -65,10 +61,8 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 	 *            state derivative
 	 */
 	@Override
-	public boolean D(ConsensusAgentState x)
-	{
-		if (getSynchronizationAgent().communicationTimer <= 0.0)
-		{
+	public boolean D(ConsensusAgentState x) {
+		if (getSynchronizationAgent().communicationTimer <= 0.0) {
 			return true;
 		}
 		return false;
@@ -81,12 +75,10 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 	 *            current state
 	 */
 	@Override
-	public void F(ConsensusAgentState x, ConsensusAgentState x_dot)
-	{
+	public void F(ConsensusAgentState x, ConsensusAgentState x_dot) {
 		x_dot.systemValue = x.controllerValue;
 		x_dot.controllerValue = 0.0;
-		if (this.getComponents().getState().equals(getSynchronizationAgent()))
-		{
+		if (this.getComponents().getState().equals(getSynchronizationAgent())) {
 			x_dot.communicationTimer = -1.0;
 		}
 	}
@@ -100,18 +92,15 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 	 *            updated state
 	 */
 	@Override
-	public void G(ConsensusAgentState x, ConsensusAgentState x_plus)
-	{
+	public void G(ConsensusAgentState x, ConsensusAgentState x_plus) {
 		double controllerUpdate = 0.0;
-		for (ConsensusAgentState connectedAgent : network.getConnections(getComponents().getState()))
-		{
-			controllerUpdate += -params.jumpGain * (x.systemValue - connectedAgent.systemValue);
+		for (ConsensusAgentState connectedAgent : network.getConnections(getComponents().getState())) {
+			controllerUpdate += -params.controllerGain * (x.systemValue - connectedAgent.systemValue);
 		}
-		if (x.communicationTimer <= 0.0)
-		{
+		if (x.communicationTimer <= 0.0) {
 			Double nextEvent = Math.random()
-			* (params.maximumCommunicationInterval - params.minimumCommunicationInterval)
-			+ params.minimumCommunicationInterval;
+					* (params.maximumCommunicationInterval - params.minimumCommunicationInterval)
+					+ params.minimumCommunicationInterval;
 			x_plus.communicationTimer = nextEvent;
 		}
 
@@ -121,15 +110,13 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState>
 
 	/**
 	 * Get the agent whose timer triggers the communication event (one agent in
-	 * network if the system is synchronous, or every agent in network if the
-	 * system is asynchronous)
+	 * network if the system is synchronous, or every agent in network if the system
+	 * is asynchronous)
 	 */
-	public ConsensusAgentState getSynchronizationAgent()
-	{
+	public ConsensusAgentState getSynchronizationAgent() {
 
 		ConsensusAgentState syncAgent = getComponents().getState();
-		if (params.synchronous)
-		{
+		if (params.synchronous) {
 			syncAgent = this.network.getAllVertices().get(0);
 		}
 		return syncAgent;
