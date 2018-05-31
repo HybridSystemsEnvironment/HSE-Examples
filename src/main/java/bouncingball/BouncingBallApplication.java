@@ -3,7 +3,7 @@ package bouncingball;
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
-import edu.ucsc.cross.hse.core.environment.HSESettings;
+import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
@@ -23,16 +23,21 @@ import edu.ucsc.cross.hse.core.variable.RandomVariable;
  *
  */
 public class BouncingBallApplication {
-
 	/**
-	 * Main method for running the bouncing ball application
+	 * Main method for running application
 	 * 
 	 * @param args
 	 *            none
 	 */
 	public static void main(String args[]) {
-		// Generate environment
-		HSEnvironment environment = generateEnvironment();
+		// Load console settings
+		loadConsoleSettings();
+		// Create set of connected agents
+		SystemSet systems = generateBouncingBallSystems(3, .99, 9.81, 2, 5, -1, 1);
+		// Create configured settings
+		EnvironmentSettings settings = getEnvironmentSettings();
+		// Create loaded environment
+		HSEnvironment environment = HSEnvironment.create(systems, settings);
 		// Run simulation and store result trajectories
 		TrajectorySet trajectories = environment.run();
 		// Generate figure and display in window
@@ -40,31 +45,13 @@ public class BouncingBallApplication {
 	}
 
 	/**
-	 * Generate the bouncing ball environment
-	 * 
-	 * @return environment
-	 */
-	public static HSEnvironment generateEnvironment() {
-		// Generate bouncing ball systems
-		SystemSet systems = generateBouncingBallSystems(3, .99, 9.81, 2, 5, -1, 1);
-		// Create configured settings
-		HSESettings settings = getEnvironmentSettings();
-		// Create loaded environment
-		HSEnvironment environment = HSEnvironment.create(systems, settings);
-		// Return loaded environment
-		return environment;
-	}
-
-	/**
 	 * Creates the configured environment settings
 	 * 
 	 * @return EnvironmentSettings
 	 */
-	public static HSESettings getEnvironmentSettings() {
-		// Load console settings
-		loadConsoleSettings();
+	public static EnvironmentSettings getEnvironmentSettings() {
 		// Create engine settings
-		HSESettings settings = new HSESettings();
+		EnvironmentSettings settings = new EnvironmentSettings();
 		// Specify general parameter values
 		settings.maximumJumps = 10000;
 		settings.maximumTime = 25;
@@ -109,6 +96,32 @@ public class BouncingBallApplication {
 	}
 
 	/**
+	 * Generate a figure with the vertical (y position and velocity) bouncing ball
+	 * state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all vertical bouncing ball state elements
+	 */
+	public static Figure generateVerticalStateFigure(TrajectorySet solution) {
+		// Create figure w:1000 h:600
+		Figure figure = new Figure(1000, 600);
+		// Assign title to figure
+		figure.getTitle().setText("Bouncing Ball Simulation");
+		// Create charts
+		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
+		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
+		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
+		// Add charts to figure
+		figure.addComponent(0, 0, yPos);
+		figure.addComponent(0, 1, yVel);
+		// Return generated figure
+		return figure;
+	}
+
+	/**
 	 * Generate a set of bouncing ball systems
 	 * 
 	 * @param quantity
@@ -139,31 +152,4 @@ public class BouncingBallApplication {
 		}
 		return systems;
 	}
-
-	/**
-	 * Generate a figure with the vertical (y position and velocity) bouncing ball
-	 * state elements
-	 * 
-	 * @param solution
-	 *            trajectory set containing data to load into figure
-	 * @return a figure displaying all vertical bouncing ball state elements
-	 */
-	public static Figure generateVerticalStateFigure(TrajectorySet solution) {
-		// Create figure w:1000 h:600
-		Figure figure = new Figure(1000, 600);
-		// Assign title to figure
-		figure.getTitle().setText("Bouncing Ball Simulation");
-		// Create charts
-		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
-		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
-		// Label chart axis and configure legend visibility
-		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
-		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
-		// Add charts to figure
-		figure.addComponent(0, 0, yPos);
-		figure.addComponent(0, 1, yVel);
-		// Return generated figure
-		return figure;
-	}
-
 }

@@ -14,12 +14,12 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	/**
 	 * Consensus network parameters
 	 */
-	ConsensusParameters params;
+	public ConsensusParameters params;
 
 	/**
 	 * Agent connection network
 	 */
-	DirectNetwork<ConsensusAgentState> network;
+	public DirectNetwork<ConsensusAgentState> network;
 
 	/**
 	 * Constructor for the agent system
@@ -69,10 +69,12 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	}
 
 	/**
-	 * Jump set
+	 * Flow map
 	 * 
 	 * @param x
 	 *            current state
+	 * @param x_dot
+	 *            derivative
 	 */
 	@Override
 	public void F(ConsensusAgentState x, ConsensusAgentState x_dot) {

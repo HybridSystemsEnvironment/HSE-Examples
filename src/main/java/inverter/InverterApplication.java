@@ -1,14 +1,17 @@
 package inverter;
 
+import java.awt.Color;
+
 import org.jfree.chart.ChartPanel;
 
+import edu.ucsc.cross.hse.core.chart.ChartType;
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
-import edu.ucsc.cross.hse.core.environment.HSESettings;
+import edu.ucsc.cross.hse.core.chart.RendererConfiguration;
+import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
 import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
-import edu.ucsc.cross.hse.core.integrator.FirstOrderIntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
@@ -30,11 +33,21 @@ public class InverterApplication {
 	 *            none
 	 */
 	public static void main(String args[]) {
+		// Load console settings
 		loadConsoleSettings();
-		HSEnvironment environment = generateEnvironment();
+		// Create system set containing inverter
+		SystemSet systems = new SystemSet(generateInverterSystem(60.0, 1.0, 0.1, 6.66e-5, 220.0, .05, 120.0, 1.0, 1.0,
+				60.0, 120 * 6.66e-5 * 60.0 * 2 * Math.PI, 0.0));
+		// Create configured settings
+		EnvironmentSettings settings = getEnvironmentSettings();
+		// Create loaded environment
+		HSEnvironment environment = HSEnvironment.create(systems, settings);
+		// Run simulation and store result trajectories
 		environment.run();
+		// Generate figures and display in window
 		generateFullStateFigure(environment.getTrajectories()).display();
-		generateFullStateFigureSplit(environment.getTrajectories()).display();
+		generateFullStateFigureSplitColored(environment.getTrajectories()).display();
+		// generateFullStateFigureSplit(environment.getTrajectories()).display();
 	}
 
 	/**
@@ -47,7 +60,7 @@ public class InverterApplication {
 		SystemSet systems = new SystemSet(generateInverterSystem(60.0, 1.0, 0.1, 6.66e-5, 220.0, .05, 120.0, 1.0, 1.0,
 				60.0, 120 * 6.66e-5 * 60.0 * 2 * Math.PI, 0.0));
 
-		HSESettings settings = getEnvironmentSettings();
+		EnvironmentSettings settings = getEnvironmentSettings();
 
 		environment = HSEnvironment.create(systems, settings);
 
@@ -55,49 +68,178 @@ public class InverterApplication {
 	}
 
 	/**
-	 * Initializes environment settings
+	 * Creates the configured environment settings
 	 * 
-	 * @return environment settings
+	 * @return EnvironmentSettings
 	 */
-	public static HSESettings getEnvironmentSettings() {
-		HSESettings settings = new HSESettings();
+	public static EnvironmentSettings getEnvironmentSettings() {
+		// Create engine settings
+		EnvironmentSettings settings = new EnvironmentSettings();
+		// Specify general parameter values
 		settings.maximumJumps = 4000000;
-		settings.maximumTime = 0.12;
+		settings.maximumTime = 0.012;
 		settings.dataPointInterval = .00005;
-		settings.eventHandlerMaximumCheckInterval = 1E-6;
-		settings.eventHandlerConvergenceThreshold = 1E-10;
+		settings.eventHandlerMaximumCheckInterval = 1E-8;
+		settings.eventHandlerConvergenceThreshold = 1E-8;
 		settings.maxEventHandlerIterations = 100;
-		double odeMaximumStepSize = 1e-6;
-		double odeMinimumStepSize = 1e-9;
-		double odeRelativeTolerance = 1.0e-6;
-		double odeSolverAbsoluteTolerance = 1.0e-6;
-		FirstOrderIntegratorFactory defaultIntegrator = new DormandPrince853IntegratorFactory(odeMinimumStepSize,
-				odeMaximumStepSize, odeRelativeTolerance, odeSolverAbsoluteTolerance);
-		settings.integrator = defaultIntegrator;
-		// settings.integrator = new EulerIntegrator(1E-8);
 		settings.domainPriority = DomainPriority.JUMP;
 		settings.storeNonPrimativeData = false;
-		settings.dataPointInterval = .00005;
+		// Specify integrator parameter values
+		double odeMinimumStepSize = 1e-12;
+		double odeMaximumStepSize = 1e-7;
+		double odeRelativeTolerance = 1.0e-6;
+		double odeSolverAbsoluteTolerance = 1.0e-6;
+		// Create and store integrator factory
+		DormandPrince853IntegratorFactory integ = new DormandPrince853IntegratorFactory(odeMaximumStepSize,
+				odeMinimumStepSize, odeRelativeTolerance, odeSolverAbsoluteTolerance);
+		settings.integrator = integ;
+		// Return configured settings
 		return settings;
 	}
 
 	/**
-	 * Initializes console settings
-	 * 
-	 * @return console settings
+	 * Creates and loads console settings
 	 */
 	public static void loadConsoleSettings() {
+		// Create new console settings
 		ConsoleSettings console = new ConsoleSettings();
-		console.printStatusInterval = 10.0;
-		console.printProgressIncrement = 10;
-		console.printIntegratorExceptions = false;
+		// Configure message type visibility
 		console.printInfo = true;
-		console.printDebug = true;
+		console.printDebug = false;
 		console.printWarning = true;
 		console.printError = true;
+		// Configure status messages
+		console.printIntegratorExceptions = true;
+		console.printStatusInterval = 10.0;
+		console.printProgressIncrement = 10;
+		// Configure input and output handling
 		console.printLogToFile = true;
 		console.terminateAtInput = true;
+		// Load configured settings
 		Console.setSettings(console);
+	}
+
+	/**
+	 * Generate a figure with the vertical (y position and velocity) bouncing ball
+	 * state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all vertical Inverter state elements
+	 */
+	public static Figure generateFullStateFigure(TrajectorySet solution) {
+		// Create figure w:1000 h:600
+		Figure figure = new Figure(1200, 1200);
+		// Assign title to figure
+		figure.getTitle().setText("Hybrid Inverter Simulation Results");
+		// Create charts
+		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC");
+		ChartPanel tA = ChartUtils.createPanel(solution, HybridTime.TIME, "q");
+		ChartPanel pV = ChartUtils.createPanel(solution, HybridTime.TIME, "iL");
+		ChartPanel sV = ChartUtils.createPanel(solution, HybridTime.TIME, "vC");
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(pA, "iL", "vC", null, false);
+		ChartUtils.configureLabels(tA, "Time (sec)", "q", null, false);
+		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
+		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
+		// Add charts to figure
+		figure.addComponent(1, 0, pA);
+		figure.addComponent(1, 1, tA);
+		figure.addComponent(0, 0, pV);
+		figure.addComponent(0, 1, sV);
+		// Return generated figure
+		return figure;
+	}
+
+	/**
+	 * Generate a figure with the vertical (y position and velocity) bouncing ball
+	 * state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all vertical Inverter state elements
+	 */
+	public static Figure generateFullStateFigureSplit(TrajectorySet solution) {
+		// Create main figure w:800 h:600
+		Figure figure = new Figure(800, 600);
+		// Create left subfigure (size irrelavant)
+		Figure left = new Figure(800, 600);
+		// Create right subfigure (size irrelavant)
+		Figure right = new Figure(800, 600);
+		// Assign title to figure
+		figure.getTitle().setText("Hybrid Inverter Simulation Results");
+		// Create charts
+		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC");
+		ChartPanel sA = ChartUtils.createPanel(solution, HybridTime.TIME, "p");
+		ChartPanel tA = ChartUtils.createPanel(solution, HybridTime.TIME, "q");
+		ChartPanel pV = ChartUtils.createPanel(solution, HybridTime.TIME, "iL");
+		ChartPanel sV = ChartUtils.createPanel(solution, HybridTime.TIME, "vC");
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(pA, "iL", "vC", null, false);
+		ChartUtils.configureLabels(sA, "Time (sec)", "p", null, false);
+		ChartUtils.configureLabels(tA, "Time (sec)", "q", null, false);
+		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
+		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
+		// Add charts to subfigures
+		left.addComponent(1, 0, pA);
+		right.addComponent(0, 0, sA);
+		right.addComponent(1, 0, tA);
+		right.addComponent(0, 1, pV);
+		right.addComponent(1, 1, sV);
+		// Add subfigures to main figure
+		figure.addComponent(0, 0, left.getContentPanel());
+		figure.addComponent(1, 0, right.getContentPanel());
+		// Return generated figure
+		return figure;
+	}
+
+	/**
+	 * Generate a figure with the vertical (y position and velocity) bouncing ball
+	 * state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all vertical Inverter state elements
+	 */
+	public static Figure generateFullStateFigureSplitColored(TrajectorySet solution) {
+		// Create main figure w:800 h:600
+		Figure figure = new Figure(800, 600);
+		// Create left subfigure (size irrelavant)
+		Figure left = new Figure(800, 600);
+		// Create right subfigure (size irrelavant)
+		Figure right = new Figure(800, 600);
+		// Assign title to figure
+		figure.getTitle().setText("Hybrid Inverter Simulation Results");
+		// Create renderer
+		RendererConfiguration renderer = new RendererConfiguration();
+		// Assign colors to each state element
+		renderer.assignSeriesColor("InverterState (vC)", Color.ORANGE);
+		renderer.assignSeriesColor("InverterState (q)", Color.BLUE);
+		renderer.assignSeriesColor("InverterState (p)", Color.GREEN);
+		renderer.assignSeriesColor("InverterState (iL)", Color.BLACK);
+		// Create charts
+		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC", ChartType.LINE, renderer, null);
+		ChartPanel sA = ChartUtils.createPanel(solution, HybridTime.TIME, "p", ChartType.LINE, renderer, null);
+		ChartPanel tA = ChartUtils.createPanel(solution, HybridTime.TIME, "q", ChartType.LINE, renderer, null);
+		ChartPanel pV = ChartUtils.createPanel(solution, HybridTime.TIME, "iL", ChartType.LINE, renderer, null);
+		ChartPanel sV = ChartUtils.createPanel(solution, HybridTime.TIME, "vC", ChartType.LINE, renderer, null);
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(pA, "iL", "vC", null, false);
+		ChartUtils.configureLabels(sA, "Time (sec)", "p", null, false);
+		ChartUtils.configureLabels(tA, "Time (sec)", "q", null, false);
+		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
+		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
+		// Add charts to subfigures
+		left.addComponent(1, 0, pA);
+		right.addComponent(0, 0, sA);
+		right.addComponent(1, 0, tA);
+		right.addComponent(0, 1, pV);
+		right.addComponent(1, 1, sV);
+		// Add subfigures to main figure
+		figure.addComponent(0, 0, left.getContentPanel());
+		figure.addComponent(1, 0, right.getContentPanel());
+		// Return generated figure
+		return figure;
 	}
 
 	/**
@@ -125,82 +267,8 @@ public class InverterApplication {
 	public static InverterSystem generateInverterSystem(double f, double R, double L, double Cap, double V, double e,
 			double b, double p0, double q0, double vIn0, double iL0, double vC0) {
 		InverterParameters params = new InverterParameters(f, R, L, Cap, V, e, b);
-		InverterState state = new InverterState(p0, q0, iL0, vC0, vIn0);
+		InverterState state = new InverterState(p0, q0, iL0, vC0);
 		InverterSystem invSys = new InverterSystem(state, params);
 		return invSys;
-	}
-
-	/**
-	 * Generate a figure with the vertical (y position and velocity) bouncing ball
-	 * state elements
-	 * 
-	 * @param solution
-	 *            trajectory set containing data to load into figure
-	 * @return a figure displaying all vertical Inverter state elements
-	 */
-	public static Figure generateFullStateFigure(TrajectorySet solution) {
-		Figure figure = new Figure(1200, 1200);
-
-		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC");
-		ChartPanel sA = ChartUtils.createPanel(solution, HybridTime.TIME, "p");
-		ChartPanel tA = ChartUtils.createPanel(solution, HybridTime.TIME, "q");
-		ChartPanel pV = ChartUtils.createPanel(solution, HybridTime.TIME, "iL");
-		ChartPanel sV = ChartUtils.createPanel(solution, HybridTime.TIME, "vC");
-		ChartPanel tV = ChartUtils.createPanel(solution, HybridTime.TIME, "tau");
-
-		ChartUtils.configureLabels(pA, "iL", "vC", null, false);
-		ChartUtils.configureLabels(sA, "Time (sec)", "p", null, false);
-		ChartUtils.configureLabels(tA, "Time (sec)", "q", null, false);
-		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
-		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
-		ChartUtils.configureLabels(tV, "Time (sec)", "tau", null, false);
-
-		figure.addComponent(1, 0, pA);
-		figure.addComponent(2, 0, sA);
-		figure.addComponent(3, 0, tA);
-		figure.addComponent(1, 1, pV);
-		figure.addComponent(2, 1, sV);
-		figure.addComponent(3, 1, tV);
-
-		figure.getTitle().setText("Hybrid Inverter Simulation Results");
-		return figure;
-	}
-
-	/**
-	 * Generate a figure with the vertical (y position and velocity) bouncing ball
-	 * state elements
-	 * 
-	 * @param solution
-	 *            trajectory set containing data to load into figure
-	 * @return a figure displaying all vertical Inverter state elements
-	 */
-	public static Figure generateFullStateFigureSplit(TrajectorySet solution) {
-		Figure figure = new Figure(1200, 1200);
-		Figure left = new Figure(1200, 1200);
-		Figure right = new Figure(1200, 1200);
-
-		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC");
-		ChartPanel sA = ChartUtils.createPanel(solution, HybridTime.TIME, "p");
-		ChartPanel tA = ChartUtils.createPanel(solution, HybridTime.TIME, "q");
-		ChartPanel pV = ChartUtils.createPanel(solution, HybridTime.TIME, "iL");
-		ChartPanel sV = ChartUtils.createPanel(solution, HybridTime.TIME, "vC");
-
-		ChartUtils.configureLabels(pA, "iL", "vC", null, false);
-		ChartUtils.configureLabels(sA, "Time (sec)", "p", null, false);
-		ChartUtils.configureLabels(tA, "Time (sec)", "q", null, false);
-		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
-		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
-
-		left.addComponent(1, 0, pA);
-		right.addComponent(0, 0, sA);
-		right.addComponent(1, 0, tA);
-		right.addComponent(0, 1, pV);
-		right.addComponent(1, 1, sV);
-
-		figure.getTitle().setText("Hybrid Inverter Simulation Results");
-		figure.addComponent(0, 0, left.getContentPanel());
-		figure.addComponent(1, 0, right.getContentPanel());
-
-		return figure;
 	}
 }

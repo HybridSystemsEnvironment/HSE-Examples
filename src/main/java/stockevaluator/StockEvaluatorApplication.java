@@ -3,7 +3,7 @@ package stockevaluator;
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
-import edu.ucsc.cross.hse.core.environment.HSESettings;
+import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
@@ -59,7 +59,7 @@ public class StockEvaluatorApplication {
 		SystemSet systems = new SystemSet(createStockEvaluator(historyRange, indices));
 		// SystemSet systems = new SystemSet(createStockEvaluator(historyRange,
 		// top100));
-		HSESettings settings = getBouncingBallEnvSettings();
+		EnvironmentSettings settings = getBouncingBallEnvSettings();
 
 		environment = HSEnvironment.create(systems, settings);
 
@@ -71,9 +71,9 @@ public class StockEvaluatorApplication {
 	 * 
 	 * @return EnvironmentSettings
 	 */
-	public static HSESettings getBouncingBallEnvSettings() {
+	public static EnvironmentSettings getBouncingBallEnvSettings() {
 
-		HSESettings settings = new HSESettings();
+		EnvironmentSettings settings = new EnvironmentSettings();
 		// Configure environment settings
 		settings.maximumJumps = 10000;
 		settings.maximumTime = 25;

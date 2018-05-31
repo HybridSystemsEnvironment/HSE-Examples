@@ -1,18 +1,22 @@
 package consensus;
 
+import java.util.ArrayList;
+
 import org.jfree.chart.ChartPanel;
 
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
-import edu.ucsc.cross.hse.core.environment.HSESettings;
+import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
 import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
+import edu.ucsc.cross.hse.core.modeling.HybridSystem;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
+import network.DirectNetwork;
 
 /**
  * The main class of the consensus network application that prepares and
@@ -30,8 +34,14 @@ public class ConsensusApplication {
 	 *            none
 	 */
 	public static void main(String args[]) {
-		// Generate environment
-		HSEnvironment environment = generateEnvironment();
+		// Load console settings
+		loadConsoleSettings();
+		// Create set of connected agents
+		SystemSet systems = generateConsensusAgentSystems(10, 5, false, .3, .3, 1.0);
+		// Create configured settings
+		EnvironmentSettings settings = getEnvironmentSettings();
+		// Create loaded environment
+		HSEnvironment environment = HSEnvironment.create(systems, settings);
 		// Run simulation and store result trajectories
 		TrajectorySet trajectories = environment.run();
 		// Generate figure and display in window
@@ -39,28 +49,13 @@ public class ConsensusApplication {
 	}
 
 	/**
-	 * Generate the environment
-	 * 
-	 * @return environment
-	 */
-	public static HSEnvironment generateEnvironment() {
-		HSEnvironment environment = new HSEnvironment();
-		SystemSet systems = generateConsensusAgentSystems(10, 5, false, .3, .3, 1.0);
-		HSESettings settings = getBouncingBallEnvSettings();
-		environment = HSEnvironment.create(systems, settings);
-		return environment;
-	}
-
-	/**
 	 * Creates the configured environment settings
 	 * 
 	 * @return EnvironmentSettings
 	 */
-	public static HSESettings getBouncingBallEnvSettings() {
-		// Load console settings
-		loadConsensusConsoleSettings();
+	public static EnvironmentSettings getEnvironmentSettings() {
 		// Create engine settings
-		HSESettings settings = new HSESettings();
+		EnvironmentSettings settings = new EnvironmentSettings();
 		// Specify general parameter values
 		settings.maximumJumps = 10000;
 		settings.maximumTime = 25;
@@ -84,22 +79,52 @@ public class ConsensusApplication {
 
 	/**
 	 * Creates and loads console settings
-	 * 
-	 * @return console settings
 	 */
-	public static boolean loadConsensusConsoleSettings() {
+	public static void loadConsoleSettings() {
+		// Create new console settings
 		ConsoleSettings console = new ConsoleSettings();
-		console.printStatusInterval = 10.0;
-		console.printProgressIncrement = 10;
-		console.printIntegratorExceptions = false;
+		// Configure message type visibility
 		console.printInfo = true;
 		console.printDebug = false;
 		console.printWarning = true;
 		console.printError = true;
+		// Configure status messages
+		console.printIntegratorExceptions = false;
+		console.printStatusInterval = 10.0;
+		console.printProgressIncrement = 10;
+		// Configure input and output handling
 		console.printLogToFile = true;
 		console.terminateAtInput = true;
+		// Load configured settings
 		Console.setSettings(console);
-		return true;
+	}
+
+	/**
+	 * Generate a figure with all state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all state elements
+	 */
+	public static Figure generateFullStateFigure(TrajectorySet solution) {
+		// Create figure w:800 h:600
+		Figure figure = new Figure(800, 600);
+		// Assign title to figure
+		figure.getTitle().setText("Consensus Network Simulation");
+		// Create charts
+		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "systemValue");
+		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "controllerValue");
+		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "communicationTimer");
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(xPos, "Time (sec)", "System Value", null, false);
+		ChartUtils.configureLabels(yPos, "Time (sec)", "Controller Value", null, false);
+		ChartUtils.configureLabels(xVel, "Time (sec)", "Communication Timer", null, false);
+		// Add charts to figure
+		figure.addComponent(0, 0, xPos);
+		figure.addComponent(0, 1, xVel);
+		figure.addComponent(0, 2, yPos);
+		// Return generated figure
+		return figure;
 	}
 
 	/**
@@ -125,45 +150,53 @@ public class ConsensusApplication {
 			double controller_gain, double min_communication_time, double max_communication_time) {
 
 		SystemSet systems = new SystemSet();
-		ConsensusNetwork network = new ConsensusNetwork();
 		ConsensusParameters params = new ConsensusParameters(controller_gain, min_communication_time,
 				max_communication_time, synchronous);
 
 		for (int i = 0; i < num_nodes; i++) {
 			ConsensusAgentState agent = new ConsensusAgentState(Math.random(), Math.random(), Math.random() + .05);
-			ConsensusAgentSystem system = new ConsensusAgentSystem(agent, network.getNetwork(), params);
+			ConsensusAgentSystem system = new ConsensusAgentSystem(agent, null, params);
 			systems.add(system);
 		}
 
-		network.connectAgentsRandomly(systems, num_connections);
+		ConsensusApplication.createRandomlyConnectedNetwork(systems, num_connections);
 
 		return systems;
 
 	}
 
 	/**
-	 * Generate a figure with all state elements
+	 * Connects each agent in a network to a specified number of other agents at
+	 * random
 	 * 
-	 * @param solution
-	 *            trajectory set containing data to load into figure
-	 * @return a figure displaying all state elements
+	 * @param network
+	 *            network containing all agents as vertices
+	 * @param num_connections
+	 *            number of connections to assign to each agent
 	 */
-	public static Figure generateFullStateFigure(TrajectorySet solution) {
-		Figure figure = new Figure(800, 600);
+	public static DirectNetwork<ConsensusAgentState> createRandomlyConnectedNetwork(SystemSet systems,
+			int num_connections) {
+		DirectNetwork<ConsensusAgentState> network = new DirectNetwork<ConsensusAgentState>();
+		ArrayList<HybridSystem<?>> conns = new ArrayList<HybridSystem<?>>(systems.getSystems());
 
-		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "systemValue");
-		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "controllerValue");
-		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "communicationTimer");
-
-		figure.addComponent(0, 0, xPos);
-		figure.addComponent(0, 1, xVel);
-		figure.addComponent(0, 2, yPos);
-
-		ChartUtils.configureLabels(xPos, "Time (sec)", "System Value", null, false);
-		ChartUtils.configureLabels(yPos, "Time (sec)", "Controller Value", null, false);
-		ChartUtils.configureLabels(xVel, "Time (sec)", "Communication Timer", null, false);
-
-		return figure;
+		for (HybridSystem<?> node : systems.getSystems()) {
+			ConsensusAgentSystem self = ((ConsensusAgentSystem) node);
+			self.network = network;
+			for (int coni = 0; coni < num_connections; coni++) {
+				ConsensusAgentSystem connect = ((ConsensusAgentSystem) conns.get(0));
+				connect.network = network;
+				while (connect.getComponents().getState().equals(self.getComponents().getState())) {
+					connect = ((ConsensusAgentSystem) conns.get(Math.round(conns.size()) - 1));
+				}
+				network.connect(self.getComponents().getState(), connect.getComponents().getState());
+				conns.remove(connect);
+				if (conns.size() <= 1) {
+					conns.clear();
+					conns.addAll(systems.getSystems());
+				}
+			}
+		}
+		return network;
 	}
 
 }
