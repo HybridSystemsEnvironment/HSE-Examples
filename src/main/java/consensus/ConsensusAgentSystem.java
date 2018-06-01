@@ -1,7 +1,7 @@
 package consensus;
 
 import edu.ucsc.cross.hse.core.modeling.HybridSystem;
-import network.DirectNetwork;
+import network.IdealNetwork;
 
 /**
  * Consensus agent hybrid system implementation.
@@ -19,7 +19,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	/**
 	 * Agent connection network
 	 */
-	public DirectNetwork<ConsensusAgentState> network;
+	public IdealNetwork<ConsensusAgentState> network;
 
 	/**
 	 * Constructor for the agent system
@@ -31,7 +31,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	 * @param params
 	 *            consensus network parameters
 	 */
-	public ConsensusAgentSystem(ConsensusAgentState state, DirectNetwork<ConsensusAgentState> network,
+	public ConsensusAgentSystem(ConsensusAgentState state, IdealNetwork<ConsensusAgentState> network,
 			ConsensusParameters params) {
 		super(state);
 		this.params = params;

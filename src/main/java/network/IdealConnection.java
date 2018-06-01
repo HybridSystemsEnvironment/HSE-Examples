@@ -4,24 +4,24 @@ import edu.ucsc.cross.hse.core.modeling.DataStructure;
 
 /**
  * The basic connection is a graph edge that directly connects two objects of
- * class T.
+ * class N.
  * 
  * @author Brendan Short
  * 
- * @param <T>
- *            The class type of the vertices that are to be connected
+ * @param <N>
+ *            The type of objects that are connected
  */
-public class DirectConnection<T> extends DataStructure {
+public class IdealConnection<N> extends DataStructure {
 
 	/*
 	 * Source vertex
 	 */
-	private T source;
+	private N source;
 
 	/*
 	 * Target vertex
 	 */
-	private T target;
+	private N target;
 
 	/**
 	 * Constructor for the connection from specified source to destination
@@ -31,7 +31,7 @@ public class DirectConnection<T> extends DataStructure {
 	 * @param targetVertex
 	 *            end vertex
 	 */
-	public DirectConnection(T sourceVertex, T targetVertex) {
+	public IdealConnection(N sourceVertex, N targetVertex) {
 		this.source = sourceVertex;
 		this.target = targetVertex;
 
@@ -42,7 +42,7 @@ public class DirectConnection<T> extends DataStructure {
 	 * 
 	 * @return source vertex
 	 */
-	public T getSource() {
+	public N getSource() {
 		return source;
 	}
 
@@ -51,8 +51,7 @@ public class DirectConnection<T> extends DataStructure {
 	 * 
 	 * @return target vertex
 	 */
-	public T getTarget() {
+	public N getTarget() {
 		return target;
 	}
-
 }

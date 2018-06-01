@@ -11,6 +11,8 @@ import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
+import edu.ucsc.cross.hse.core.figure.GraphicFormat;
+import edu.ucsc.cross.hse.core.file.FileBrowser;
 import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
@@ -45,8 +47,9 @@ public class InverterApplication {
 		// Run simulation and store result trajectories
 		environment.run();
 		// Generate figures and display in window
-		generateFullStateFigure(environment.getTrajectories()).display();
-		generateFullStateFigureSplitColored(environment.getTrajectories()).display();
+		// generateFullStateFigure(environment.getTrajectories()).display();
+		generateFullStateFigureSplitColored(environment.getTrajectories()).exportToFile(FileBrowser.save(),
+				GraphicFormat.PDF);// .display();
 		// generateFullStateFigureSplit(environment.getTrajectories()).display();
 	}
 
@@ -77,7 +80,7 @@ public class InverterApplication {
 		EnvironmentSettings settings = new EnvironmentSettings();
 		// Specify general parameter values
 		settings.maximumJumps = 4000000;
-		settings.maximumTime = 0.012;
+		settings.maximumTime = 0.08;
 		settings.dataPointInterval = .00005;
 		settings.eventHandlerMaximumCheckInterval = 1E-8;
 		settings.eventHandlerConvergenceThreshold = 1E-8;
@@ -202,21 +205,22 @@ public class InverterApplication {
 	 * @return a figure displaying all vertical Inverter state elements
 	 */
 	public static Figure generateFullStateFigureSplitColored(TrajectorySet solution) {
+		ChartUtils.includeVarNameInLabel = true;
 		// Create main figure w:800 h:600
-		Figure figure = new Figure(800, 600);
+		Figure figure = new Figure(800, 800);
 		// Create left subfigure (size irrelavant)
-		Figure left = new Figure(800, 600);
+		Figure left = new Figure(800, 800);
 		// Create right subfigure (size irrelavant)
-		Figure right = new Figure(800, 600);
+		Figure right = new Figure(800, 800);
 		// Assign title to figure
 		figure.getTitle().setText("Hybrid Inverter Simulation Results");
 		// Create renderer
 		RendererConfiguration renderer = new RendererConfiguration();
 		// Assign colors to each state element
-		renderer.assignSeriesColor("InverterState (vC)", Color.ORANGE);
+		renderer.assignSeriesColor("InverterState (vC)", Color.RED);
 		renderer.assignSeriesColor("InverterState (q)", Color.BLUE);
 		renderer.assignSeriesColor("InverterState (p)", Color.GREEN);
-		renderer.assignSeriesColor("InverterState (iL)", Color.BLACK);
+		renderer.assignSeriesColor("InverterState (iL)", Color.MAGENTA);
 		// Create charts
 		ChartPanel pA = ChartUtils.createPanel(solution, "iL", "vC", ChartType.LINE, renderer, null);
 		ChartPanel sA = ChartUtils.createPanel(solution, HybridTime.TIME, "p", ChartType.LINE, renderer, null);
@@ -230,14 +234,14 @@ public class InverterApplication {
 		ChartUtils.configureLabels(pV, "Time (sec)", "iL", null, false);
 		ChartUtils.configureLabels(sV, "Time (sec)", "vC", null, false);
 		// Add charts to subfigures
-		left.addComponent(1, 0, pA);
+		left.addComponent(0, 0, pA);
 		right.addComponent(0, 0, sA);
 		right.addComponent(1, 0, tA);
 		right.addComponent(0, 1, pV);
 		right.addComponent(1, 1, sV);
 		// Add subfigures to main figure
 		figure.addComponent(0, 0, left.getContentPanel());
-		figure.addComponent(1, 0, right.getContentPanel());
+		figure.addComponent(0, 1, right.getContentPanel());
 		// Return generated figure
 		return figure;
 	}

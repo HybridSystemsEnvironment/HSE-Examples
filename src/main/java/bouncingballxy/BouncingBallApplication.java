@@ -1,4 +1,4 @@
-package bouncingball4d;
+package bouncingballxy;
 
 import org.jfree.chart.ChartPanel;
 

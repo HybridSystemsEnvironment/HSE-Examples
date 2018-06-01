@@ -1,6 +1,4 @@
-package consensus;
-
-import java.util.ArrayList;
+package transmissionnode;
 
 import org.jfree.chart.ChartPanel;
 
@@ -9,10 +7,11 @@ import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
+import edu.ucsc.cross.hse.core.figure.GraphicFormat;
+import edu.ucsc.cross.hse.core.file.FileBrowser;
 import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
-import edu.ucsc.cross.hse.core.modeling.HybridSystem;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
@@ -25,7 +24,7 @@ import network.IdealNetwork;
  * @author Brendan Short
  *
  */
-public class ConsensusApplication {
+public class NodeApplication {
 
 	/**
 	 * Main method for running application
@@ -37,7 +36,7 @@ public class ConsensusApplication {
 		// Load console settings
 		loadConsoleSettings();
 		// Create set of connected agents
-		SystemSet systems = generateConsensusAgentSystems(10, 5, false, .3, .3, 1.0);
+		SystemSet systems = generateNodeSystems(.3, 1.0);
 		// Create configured settings
 		EnvironmentSettings settings = getEnvironmentSettings();
 		// Create loaded environment
@@ -45,7 +44,7 @@ public class ConsensusApplication {
 		// Run simulation and store result trajectories
 		TrajectorySet trajectories = environment.run();
 		// Generate figure and display in window
-		generateFullStateFigure(trajectories).display();
+		generateFullStateFigure(trajectories).exportToFile(FileBrowser.save(), GraphicFormat.PDF);// .display();
 	}
 
 	/**
@@ -108,21 +107,21 @@ public class ConsensusApplication {
 	 */
 	public static Figure generateFullStateFigure(TrajectorySet solution) {
 		// Create figure w:800 h:600
-		Figure figure = new Figure(800, 600);
+		Figure figure = new Figure(600, 800);
 		// Assign title to figure
-		figure.getTitle().setText("Consensus Network Simulation");
+		figure.getTitle().setText("Transmission Node Network Simulation");
 		// Create charts
-		ChartPanel xPos = ChartUtils.createPanel(solution, HybridTime.TIME, "systemValue");
-		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "controllerValue");
-		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "communicationTimer");
+		ChartPanel received = ChartUtils.createPanel(solution, HybridTime.TIME, "packetsReceived");
+		ChartPanel transmitted = ChartUtils.createPanel(solution, HybridTime.TIME, "packetsTransmitted");
+		ChartPanel timer = ChartUtils.createPanel(solution, HybridTime.TIME, "transmissionTimer");
 		// Label chart axis and configure legend visibility
-		ChartUtils.configureLabels(xPos, "Time (sec)", "System Value", null, false);
-		ChartUtils.configureLabels(yPos, "Time (sec)", "Controller Value", null, false);
-		ChartUtils.configureLabels(xVel, "Time (sec)", "Communication Timer", null, false);
+		ChartUtils.configureLabels(received, "Time (sec)", "Packets Received", null, false);
+		ChartUtils.configureLabels(transmitted, "Time (sec)", "Packets Transmitted", null, false);
+		ChartUtils.configureLabels(timer, "Time (sec)", "Transmission Timer", null, true);
 		// Add charts to figure
-		figure.addComponent(0, 0, xPos);
-		figure.addComponent(0, 1, xVel);
-		figure.addComponent(0, 2, yPos);
+		figure.addComponent(0, 0, received);
+		figure.addComponent(0, 1, transmitted);
+		figure.addComponent(0, 2, timer);
 		// Return generated figure
 		return figure;
 	}
@@ -146,57 +145,27 @@ public class ConsensusApplication {
 	 *            maximum duration between communication events
 	 * @return set of agent systems
 	 */
-	public static SystemSet generateConsensusAgentSystems(int num_nodes, int num_connections, boolean synchronous,
-			double controller_gain, double min_communication_time, double max_communication_time) {
-
+	public static SystemSet generateNodeSystems(double min_time, double max_time) {
+		// Create the system set
 		SystemSet systems = new SystemSet();
-		ConsensusParameters params = new ConsensusParameters(controller_gain, min_communication_time,
-				max_communication_time, synchronous);
-
-		for (int i = 0; i < num_nodes; i++) {
-			ConsensusAgentState agent = new ConsensusAgentState(Math.random(), Math.random(), Math.random() + .05);
-			ConsensusAgentSystem system = new ConsensusAgentSystem(agent, null, params);
-			systems.add(system);
-		}
-
-		ConsensusApplication.createRandomlyConnectedNetwork(systems, num_connections);
-
+		// Create the node parameters
+		NodeParameters params = new NodeParameters(min_time, max_time);
+		// Create the network
+		IdealNetwork<NodeSystem> network = new IdealNetwork<NodeSystem>();
+		// Create the nodes
+		NodeSystem nodeA = new NodeSystem(new NodeState(0, 0, Math.random()), params, network);
+		NodeSystem nodeB = new NodeSystem(new NodeState(0, 0, Math.random()), params, network);
+		NodeSystem nodeC = new NodeSystem(new NodeState(0, 0, Math.random()), params, network);
+		// Establish connections between the nodes
+		network.connect(nodeA, nodeB);
+		network.connect(nodeA, nodeC);
+		network.connect(nodeB, nodeC);
+		network.connect(nodeC, nodeA);
+		// Add the nodes to the system set
+		systems.add(nodeA, nodeB, nodeC);
+		// Return the loaded system set
 		return systems;
 
-	}
-
-	/**
-	 * Connects each agent in a network to a specified number of other agents at
-	 * random
-	 * 
-	 * @param network
-	 *            network containing all agents as vertices
-	 * @param num_connections
-	 *            number of connections to assign to each agent
-	 */
-	public static IdealNetwork<ConsensusAgentState> createRandomlyConnectedNetwork(SystemSet systems,
-			int num_connections) {
-		IdealNetwork<ConsensusAgentState> network = new IdealNetwork<ConsensusAgentState>();
-		ArrayList<HybridSystem<?>> conns = new ArrayList<HybridSystem<?>>(systems.getSystems());
-
-		for (HybridSystem<?> node : systems.getSystems()) {
-			ConsensusAgentSystem self = ((ConsensusAgentSystem) node);
-			self.network = network;
-			for (int coni = 0; coni < num_connections; coni++) {
-				ConsensusAgentSystem connect = ((ConsensusAgentSystem) conns.get(0));
-				connect.network = network;
-				while (connect.getComponents().getState().equals(self.getComponents().getState())) {
-					connect = ((ConsensusAgentSystem) conns.get(Math.round(conns.size()) - 1));
-				}
-				network.connect(self.getComponents().getState(), connect.getComponents().getState());
-				conns.remove(connect);
-				if (conns.size() <= 1) {
-					conns.clear();
-					conns.addAll(systems.getSystems());
-				}
-			}
-		}
-		return network;
 	}
 
 }

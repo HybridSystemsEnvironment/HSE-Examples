@@ -211,33 +211,3 @@ public class StockEvaluatorApplication {
 	}
 
 }
-
-// public static StockEvaluator createDemoOutput(String path)
-// {
-// String[] indicies = new String[]
-// { "SPY", "FAMRX", "FASGX", "FASIX", "FASMX", "FBALX", "FBGRX", "FBIDX",
-// "FBIOX", "FBMPX", "FBNDX", "FBSOX",
-// "FCNTX", "FCVSX", "FCYIX", "FDCAX", "FDCPX", "FDEQX", "FDFAX", "FDFFX",
-// "FDGFX", "FDGRX", "FDIVX",
-// "FDLSX", "FDSSX", "FDVLX", "FEQIX", "FEQTX", "FEXPX", "FFFAX", "FFFCX",
-// "FFFDX", "FFFEX", "FFFFX",
-// "FFIDX", "FGBLX", "FGMNX", "FGOVX", "FGRIX", "FGRTX", "FIEUX", "FIGRX",
-// "FINPX", "FIUIX", "FIVFX",
-// "FLCSX", "FMAGX", "FMCSX", "FMILX", "FMSFX", "FNARX", "FOCPX", "FOSFX",
-// "FPHAX", "FPURX", "FRIFX",
-// "FSAGX", "FSAVX", "FSCGX", "FSCHX", "FSCPX", "FSCSX", "FSDAX", "FSDCX",
-// "FSDPX", "FSELX", "FSENX",
-// "FSESX", "FSHBX", "FSHCX", "FSHOX", "FSICX", "FSLBX", "FSLEX", "FSLVX",
-// "FSMEX", "FSMVX", "FSPCX",
-// "FSPHX", "FSPTX", "FSRBX", "FSRFX", "FSRPX", "FSTCX", "FSTGX", "FSUTX",
-// "FSVLX", "FTBFX", "FTHRX",
-// "FTQGX", "FTRNX", "FUSEX", "FWRLX", "FWWFX" };
-
-// String[] indicies = new String[]
-// { "AAPL", "GOOG", "ONP" };
-// StockEvaluatorParameters params = new StockEvaluatorParameters(60.0,
-// ChartRange.SIX_MONTHS, 10, indicies);
-// StockEvaluatorState state = new StockEvaluatorState();
-// StockEvaluator eval = new StockEvaluator(state, params);
-// return eval;
-// }

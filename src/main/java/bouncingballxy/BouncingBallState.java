@@ -1,4 +1,4 @@
-package bouncingball4d;
+package bouncingballxy;
 
 import edu.ucsc.cross.hse.core.modeling.DataStructure;
 
