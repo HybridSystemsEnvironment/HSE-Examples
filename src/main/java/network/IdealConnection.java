@@ -1,6 +1,8 @@
+
 package network;
 
 import edu.ucsc.cross.hse.core.modeling.DataStructure;
+import edu.ucsc.cross.hse.core.network.Connection;
 
 /**
  * The basic connection is a graph edge that directly connects two objects of
@@ -11,7 +13,7 @@ import edu.ucsc.cross.hse.core.modeling.DataStructure;
  * @param <N>
  *            The type of objects that are connected
  */
-public class IdealConnection<N> extends DataStructure {
+public class IdealConnection<N> extends DataStructure implements Connection<N> {
 
 	/*
 	 * Source vertex
@@ -32,6 +34,7 @@ public class IdealConnection<N> extends DataStructure {
 	 *            end vertex
 	 */
 	public IdealConnection(N sourceVertex, N targetVertex) {
+
 		this.source = sourceVertex;
 		this.target = targetVertex;
 
@@ -43,6 +46,7 @@ public class IdealConnection<N> extends DataStructure {
 	 * @return source vertex
 	 */
 	public N getSource() {
+
 		return source;
 	}
 
@@ -52,6 +56,22 @@ public class IdealConnection<N> extends DataStructure {
 	 * @return target vertex
 	 */
 	public N getTarget() {
+
 		return target;
 	}
+
+	@Override
+	public Connection<N> createConnection(N arg0, N arg1) {
+
+		// TODO Auto-generated method stub
+		return new IdealConnection<N>(arg0, arg1);
+	}
+
+	@Override
+	public boolean terminateConnection() {
+
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

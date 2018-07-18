@@ -1,3 +1,4 @@
+
 package bouncingballxy;
 
 import org.jfree.chart.ChartPanel;
@@ -31,6 +32,7 @@ public class BouncingBallApplication {
 	 *            none
 	 */
 	public static void main(String args[]) {
+
 		// Load console settings
 		loadConsoleSettings();
 		// Generate bouncing ball systems
@@ -42,9 +44,11 @@ public class BouncingBallApplication {
 		// Run simulation and store result trajectories
 		TrajectorySet trajectories = environment.run();
 		// Generate figure and display in window
-		generateVerticalStateFigure(environment.getTrajectories()).display();
+		// generateVerticalStateFigure(environment.getTrajectories()).display();
 		// Generate figure and display in window
-		generateFullStateFigure(trajectories).display();
+		generateFullStateFigure(trajectories).display();//
+		// generateFullStateFigure(trajectories).exportToFile(FileBrowser.save(),
+		// GraphicFormat.PDF);
 	}
 
 	/**
@@ -53,11 +57,12 @@ public class BouncingBallApplication {
 	 * @return EnvironmentSettings
 	 */
 	public static EnvironmentSettings getEnvironmentSettings() {
+
 		// Create engine settings
 		EnvironmentSettings settings = new EnvironmentSettings();
 		// Specify general parameter values
 		settings.maximumJumps = 10000;
-		settings.maximumTime = 25;
+		settings.maximumTime = 5;
 		settings.dataPointInterval = .5;
 		settings.eventHandlerMaximumCheckInterval = 1E-3;
 		settings.eventHandlerConvergenceThreshold = 1E-9;
@@ -80,6 +85,7 @@ public class BouncingBallApplication {
 	 * Creates and loads console settings
 	 */
 	public static void loadConsoleSettings() {
+
 		// Create new console settings
 		ConsoleSettings console = new ConsoleSettings();
 		// Configure message type visibility
@@ -106,6 +112,7 @@ public class BouncingBallApplication {
 	 * @return a figure displaying all four bouncing ball state elements
 	 */
 	public static Figure generateFullStateFigure(TrajectorySet solution) {
+
 		// Create figure w:1000 h:600
 		Figure figure = new Figure(1000, 600);
 		// Assign title to figure
@@ -115,16 +122,18 @@ public class BouncingBallApplication {
 		ChartPanel yPos = ChartUtils.createPanel(solution, HybridTime.TIME, "yPosition");
 		ChartPanel xVel = ChartUtils.createPanel(solution, HybridTime.TIME, "xVelocity");
 		ChartPanel yVel = ChartUtils.createPanel(solution, HybridTime.TIME, "yVelocity");
+		figure.addComponent(0, 0, xPos);
+		figure.addComponent(0, 1, xVel);
+		figure.addComponent(1, 0, yPos);
+		figure.addComponent(1, 1, yVel);
+
 		// Label chart axis and configure legend visibility
 		ChartUtils.configureLabels(xPos, "Time (sec)", "X Position (m)", null, false);
 		ChartUtils.configureLabels(yPos, "Time (sec)", "Y Position (m)", null, false);
 		ChartUtils.configureLabels(xVel, "Time (sec)", "X Velocity (m/s)", null, false);
 		ChartUtils.configureLabels(yVel, "Time (sec)", "Y Velocity (m/s)", null, false);
 		// Add charts to figure
-		figure.addComponent(0, 0, xPos);
-		figure.addComponent(0, 1, xVel);
-		figure.addComponent(1, 0, yPos);
-		figure.addComponent(1, 1, yVel);
+
 		// Return generated figure
 		return figure;
 	}
@@ -138,6 +147,7 @@ public class BouncingBallApplication {
 	 * @return a figure displaying all vertical bouncing ball state elements
 	 */
 	public static Figure generateVerticalStateFigure(TrajectorySet solution) {
+
 		// Create figure w:1000 h:600
 		Figure figure = new Figure(1000, 600);
 		// Assign title to figure
@@ -185,6 +195,7 @@ public class BouncingBallApplication {
 	public static SystemSet generateBouncingBallSystems(double restitution_coefficient, double gravity_constant,
 			int quantity, double min_x_pos, double max_x_pos, double min_y_pos, double max_y_pos, double min_x_vel,
 			double max_x_vel, double min_y_vel, double max_y_vel) {
+
 		SystemSet systems = new SystemSet();
 		BouncingBallParameters physics = new BouncingBallParameters(restitution_coefficient, gravity_constant);
 		for (int ballNum = 0; ballNum < quantity; ballNum++) {

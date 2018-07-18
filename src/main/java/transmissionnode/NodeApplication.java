@@ -1,3 +1,4 @@
+
 package transmissionnode;
 
 import org.jfree.chart.ChartPanel;
@@ -33,6 +34,7 @@ public class NodeApplication {
 	 *            none
 	 */
 	public static void main(String args[]) {
+
 		// Load console settings
 		loadConsoleSettings();
 		// Create set of connected agents
@@ -53,6 +55,7 @@ public class NodeApplication {
 	 * @return EnvironmentSettings
 	 */
 	public static EnvironmentSettings getEnvironmentSettings() {
+
 		// Create engine settings
 		EnvironmentSettings settings = new EnvironmentSettings();
 		// Specify general parameter values
@@ -80,6 +83,7 @@ public class NodeApplication {
 	 * Creates and loads console settings
 	 */
 	public static void loadConsoleSettings() {
+
 		// Create new console settings
 		ConsoleSettings console = new ConsoleSettings();
 		// Configure message type visibility
@@ -106,6 +110,7 @@ public class NodeApplication {
 	 * @return a figure displaying all state elements
 	 */
 	public static Figure generateFullStateFigure(TrajectorySet solution) {
+
 		// Create figure w:800 h:600
 		Figure figure = new Figure(600, 800);
 		// Assign title to figure
@@ -114,6 +119,37 @@ public class NodeApplication {
 		ChartPanel received = ChartUtils.createPanel(solution, HybridTime.TIME, "packetsReceived");
 		ChartPanel transmitted = ChartUtils.createPanel(solution, HybridTime.TIME, "packetsTransmitted");
 		ChartPanel timer = ChartUtils.createPanel(solution, HybridTime.TIME, "transmissionTimer");
+		// Label chart axis and configure legend visibility
+		ChartUtils.configureLabels(received, "Time (sec)", "Packets Received", null, false);
+		ChartUtils.configureLabels(transmitted, "Time (sec)", "Packets Transmitted", null, false);
+		ChartUtils.configureLabels(timer, "Time (sec)", "Transmission Timer", null, true);
+		// Add charts to figure
+		figure.addComponent(0, 0, received);
+		figure.addComponent(0, 1, transmitted);
+		figure.addComponent(0, 2, timer);
+		// Return generated figure
+		return figure;
+	}
+
+	/**
+	 * Generate a figure with all state elements
+	 * 
+	 * @param solution
+	 *            trajectory set containing data to load into figure
+	 * @return a figure displaying all state elements
+	 */
+	public static Figure generateFullStateFigureImageAxis(TrajectorySet solution) {
+
+		// Create figure w:800 h:600
+		Figure figure = new Figure(600, 800);
+		// Assign title to figure
+		figure.getTitle().setText("Transmission Node Network Simulation");
+		// Create charts
+		ChartPanel received = ChartUtils.createPanel(solution, HybridTime.TIME, "packetsReceived");
+
+		ChartPanel transmitted = ChartUtils.createPanel(solution, HybridTime.TIME, "packetsTransmitted");
+		ChartPanel timer = ChartUtils.createPanel(solution, HybridTime.TIME, "transmissionTimer");
+
 		// Label chart axis and configure legend visibility
 		ChartUtils.configureLabels(received, "Time (sec)", "Packets Received", null, false);
 		ChartUtils.configureLabels(transmitted, "Time (sec)", "Packets Transmitted", null, false);
@@ -146,6 +182,7 @@ public class NodeApplication {
 	 * @return set of agent systems
 	 */
 	public static SystemSet generateNodeSystems(double min_time, double max_time) {
+
 		// Create the system set
 		SystemSet systems = new SystemSet();
 		// Create the node parameters

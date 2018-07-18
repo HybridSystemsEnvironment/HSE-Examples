@@ -15,11 +15,13 @@ configurations.all {
 }
 
 dependencies {
+	 
     // HSE
-	compile 'com.github.HybridSystemsEnvironment:HybridSystemsEnvironment:-SNAPSHOT'
+ compile 'com.github.HybridSystemsEnvironment:HybridSystemsEnvironment:1.0.0'
 
 	// Stock Market API
 	compile group: 'pl.zankowski', name: 'iextrading4j-all', version: '2.1.1'
+	compile 'net.sourceforge.jeuclid:jeuclid-core:3.1.9'
 	
     // Test
 	testCompile group: 'junit', name: 'junit', version: '4.9'
