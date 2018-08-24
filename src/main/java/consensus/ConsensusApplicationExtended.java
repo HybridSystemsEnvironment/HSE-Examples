@@ -1,3 +1,4 @@
+
 package consensus;
 
 import java.util.ArrayList;
@@ -13,10 +14,10 @@ import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
 import edu.ucsc.cross.hse.core.modeling.HybridSystem;
+import edu.ucsc.cross.hse.core.network.Network;
 import edu.ucsc.cross.hse.core.specification.DomainPriority;
 import edu.ucsc.cross.hse.core.trajectory.HybridTime;
 import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
-import network.IdealNetwork;
 
 /**
  * The main class of the consensus network application that prepares and
@@ -34,6 +35,7 @@ public class ConsensusApplicationExtended {
 	 *            none
 	 */
 	public static void main(String args[]) {
+
 		// Load console settings
 		loadConsoleSettings();
 		// Create set of connected agents
@@ -54,6 +56,7 @@ public class ConsensusApplicationExtended {
 	 * @return EnvironmentSettings
 	 */
 	public static EnvironmentSettings getEnvironmentSettings() {
+
 		// Create engine settings
 		EnvironmentSettings settings = new EnvironmentSettings();
 		// Specify general parameter values
@@ -81,6 +84,7 @@ public class ConsensusApplicationExtended {
 	 * Creates and loads console settings
 	 */
 	public static void loadConsoleSettings() {
+
 		// Create new console settings
 		ConsoleSettings console = new ConsoleSettings();
 		// Configure message type visibility
@@ -107,6 +111,7 @@ public class ConsensusApplicationExtended {
 	 * @return a figure displaying all state elements
 	 */
 	public static Figure generateFullStateFigure(TrajectorySet solution) {
+
 		// Create figure w:800 h:600
 		Figure figure = new Figure(800, 600);
 		// Assign title to figure
@@ -174,9 +179,9 @@ public class ConsensusApplicationExtended {
 	 * @param num_connections
 	 *            number of connections to assign to each agent
 	 */
-	public static IdealNetwork<ConsensusAgentState> createRandomlyConnectedNetwork(SystemSet systems,
-			int num_connections) {
-		IdealNetwork<ConsensusAgentState> network = new IdealNetwork<ConsensusAgentState>();
+	public static Network<ConsensusAgentState> createRandomlyConnectedNetwork(SystemSet systems, int num_connections) {
+
+		Network<ConsensusAgentState> network = new Network<ConsensusAgentState>(true);
 		ArrayList<HybridSystem<?>> conns = new ArrayList<HybridSystem<?>>(systems.getSystems());
 
 		for (HybridSystem<?> node : systems.getSystems()) {

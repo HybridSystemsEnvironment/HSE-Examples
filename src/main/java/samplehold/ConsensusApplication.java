@@ -1,8 +1,12 @@
 
-package consensus;
+package samplehold;
 
 import org.jfree.chart.ChartPanel;
 
+import bouncingball.BouncingBallState;
+import consensus.ConsensusAgentState;
+import consensus.ConsensusAgentSystem;
+import consensus.ConsensusParameters;
 import edu.ucsc.cross.hse.core.chart.ChartUtils;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.figure.Figure;
@@ -27,6 +31,12 @@ public class ConsensusApplication {
 	 */
 	public static void main(String args[]) {
 
+		main2();
+
+	}
+
+	public static void main1() {
+
 		// Initialize environment
 		HSEnvironment environment = new HSEnvironment();
 		// Initialize consensus parameters (gain, min comm time, max comm time,sync)
@@ -35,15 +45,17 @@ public class ConsensusApplication {
 		ConsensusAgentState state1 = new ConsensusAgentState(.3, .3, .3);
 		ConsensusAgentState state2 = new ConsensusAgentState(.5, .5, .5);
 		ConsensusAgentState state3 = new ConsensusAgentState(.7, .7, .7);
+		BouncingBallState state = new BouncingBallState(1.0, 1.0);
 		// Initialize network
-		Network<ConsensusAgentState> network = new Network<ConsensusAgentState>(true);
+		Network<Object> network = new Network<Object>(true);
 		// Connect agent states (source, target)
 		network.connect(state1, state2);
 		network.connect(state2, state3);
+		network.connect(state, state3);
 		// Initialize agent systems
-		ConsensusAgentSystem system1 = new ConsensusAgentSystem(state1, network, params);
-		ConsensusAgentSystem system2 = new ConsensusAgentSystem(state2, network, params);
-		ConsensusAgentSystem system3 = new ConsensusAgentSystem(state3, network, params);
+		ConsensusAgentSystem system1 = new ConsensusAgentSystem(state1, null, params);
+		ConsensusAgentSystem system2 = new ConsensusAgentSystem(state2, null, params);
+		ConsensusAgentSystem system3 = new ConsensusAgentSystem(state3, null, params);
 		// Add agent systems to environment
 		environment.getSystems().add(system1, system2, system3);
 		// Run environment (max time duration, max jumps)
@@ -53,6 +65,37 @@ public class ConsensusApplication {
 		// Display the figure in new window
 		figure.display();
 
+	}
+
+	public static void main2() {
+
+		// Initialize environment
+		HSEnvironment environment = new HSEnvironment();
+		// Initialize consensus parameters (gain, min comm time, max comm time,sync)
+		ConsensusParameters params = new ConsensusParameters(.3, .5, 1.0, false);
+		// Initialize agent states (system val, controller val, timer val)
+		ConsensusAgentState state1 = new ConsensusAgentState(.3, .3, .3);
+		ConsensusAgentState state2 = new ConsensusAgentState(.5, .5, .5);
+		ConsensusAgentState state3 = new ConsensusAgentState(.7, .7, .7);
+		BouncingBallState state = new BouncingBallState(1.0, 1.0);
+		// Initialize network
+		Network<Object> network = new Network<Object>(true);
+		// Connect agent states (source, target)
+		network.connect(state1, state2);
+		network.connect(state2, state3);
+		network.connect(state, state3);
+		// Initialize agent systems
+		ConsensusAgentSystem system1 = new ConsensusAgentSystem(state1, null, params);
+		ConsensusAgentSystem system2 = new ConsensusAgentSystem(state2, null, params);
+		ConsensusAgentSystem system3 = new ConsensusAgentSystem(state3, null, params);
+		// Add agent systems to environment
+		environment.getSystems().add(system1, system2, system3);
+		// Run environment (max time duration, max jumps)
+		environment.run(20.0, 200);
+		// Generate a figure of the trajectories
+		Figure figure = generateFullStateFigure(environment.getTrajectories());
+		// Display the figure in new window
+		figure.display();
 	}
 
 	/**

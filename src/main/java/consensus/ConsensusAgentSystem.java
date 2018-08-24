@@ -1,7 +1,8 @@
+
 package consensus;
 
 import edu.ucsc.cross.hse.core.modeling.HybridSystem;
-import network.IdealNetwork;
+import edu.ucsc.cross.hse.core.network.Network;
 
 /**
  * Consensus agent hybrid system implementation.
@@ -19,7 +20,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	/**
 	 * Agent connection network
 	 */
-	public IdealNetwork<ConsensusAgentState> network;
+	public Network<ConsensusAgentState> network;
 
 	/**
 	 * Constructor for the agent system
@@ -31,8 +32,9 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	 * @param params
 	 *            consensus network parameters
 	 */
-	public ConsensusAgentSystem(ConsensusAgentState state, IdealNetwork<ConsensusAgentState> network,
+	public ConsensusAgentSystem(ConsensusAgentState state, Network<ConsensusAgentState> network,
 			ConsensusParameters params) {
+
 		super(state);
 		this.params = params;
 		this.network = network;
@@ -46,6 +48,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	 */
 	@Override
 	public boolean C(ConsensusAgentState x) {
+
 		if (x.communicationTimer >= 0.0) {
 			return true;
 		}
@@ -62,6 +65,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	 */
 	@Override
 	public boolean D(ConsensusAgentState x) {
+
 		if (getSynchronizationAgent().communicationTimer <= 0.0) {
 			return true;
 		}
@@ -78,6 +82,7 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	 */
 	@Override
 	public void F(ConsensusAgentState x, ConsensusAgentState x_dot) {
+
 		x_dot.systemValue = x.controllerValue;
 		x_dot.controllerValue = 0.0;
 		if (this.getComponents().getState().equals(getSynchronizationAgent())) {
@@ -95,8 +100,9 @@ public class ConsensusAgentSystem extends HybridSystem<ConsensusAgentState> {
 	 */
 	@Override
 	public void G(ConsensusAgentState x, ConsensusAgentState x_plus) {
+
 		double controllerUpdate = 0.0;
-		for (ConsensusAgentState connectedAgent : network.getConnections(getComponents().getState())) {
+		for (ConsensusAgentState connectedAgent : network.getConnected(getComponents().getState())) {
 			controllerUpdate += -params.controllerGain * (x.systemValue - connectedAgent.systemValue);
 		}
 		if (x.communicationTimer <= 0.0) {
