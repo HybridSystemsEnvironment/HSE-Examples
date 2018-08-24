@@ -1,5 +1,5 @@
 
-package stockevaluator.externaldef;
+package documentation.stockeval;
 
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.figure.Figure;
@@ -10,10 +10,10 @@ import edu.ucsc.cross.hse.core.trajectory.TrajectorySet;
 import pl.zankowski.iextrading4j.api.stocks.ChartRange;
 
 /**
- * A bouncing ball application that prepares and operates the environment, and
+ * A stock evaluator application that prepares and operates the environment, and
  * generates a figure.
  */
-public class StockApplication {
+public class StockEvaluatorApplication {
 
 	/**
 	 * Main method for running application
@@ -22,15 +22,13 @@ public class StockApplication {
 
 		// Initialize environment
 		HSEnvironment environment = new HSEnvironment();
-		// Initialize stock indices
+		// Initialize stock index array
 		String[] indices = new String[] { "GOOG", "AAPL", "FB" };
-		// Initialize stock evaluator parameters (range, query interval, indices)
+		// Initialize stock evaluator parameters
 		StockEvaluatorParameters params = new StockEvaluatorParameters(ChartRange.ONE_YEAR, 60.0, indices);
-		// Initialize stock evaluator system
+		// Initialize new stock evaluator
 		HybridSys<StockEvaluatorState> system = new HybridSys<StockEvaluatorState>(new StockEvaluatorState(params),
 				new Fp(), new Gp(params), new Cp(), new Dp(), params);
-
-		// Add bouncing ball system to environment
 		environment.getSystems().add(system);
 		// Run environment (max time duration, max jumps)
 		TrajectorySet traj = environment.run(120.0, 10);
@@ -38,6 +36,7 @@ public class StockApplication {
 		Figure figure = getAllValueFigure(system, traj);
 		// export figure to pdf
 		figure.exportToFile(GraphicFormat.PDF);
+
 	}
 
 	public static Figure getAllValueFigure(HybridSys<StockEvaluatorState> system, TrajectorySet traj) {

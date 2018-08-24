@@ -1,5 +1,5 @@
 
-package stockevaluator.externaldef;
+package documentation.stockeval;
 
 import edu.ucsc.cross.hse.core.modeling.JumpSet;
 

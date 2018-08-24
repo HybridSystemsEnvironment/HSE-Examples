@@ -10,6 +10,7 @@ import edu.ucsc.cross.hse.core.environment.EnvironmentSettings;
 import edu.ucsc.cross.hse.core.environment.HSEnvironment;
 import edu.ucsc.cross.hse.core.environment.SystemSet;
 import edu.ucsc.cross.hse.core.figure.Figure;
+import edu.ucsc.cross.hse.core.figure.GraphicFormat;
 import edu.ucsc.cross.hse.core.integrator.DormandPrince853IntegratorFactory;
 import edu.ucsc.cross.hse.core.logging.Console;
 import edu.ucsc.cross.hse.core.logging.ConsoleSettings;
@@ -46,8 +47,19 @@ public class ConsensusApplicationExtended {
 		HSEnvironment environment = HSEnvironment.create(systems, settings);
 		// Run simulation and store result trajectories
 		TrajectorySet trajectories = environment.run();
-		// Generate figure and display in window
-		generateFullStateFigure(trajectories).display();
+		 
+		// generate figure
+				// Create figure w:800 h:600
+				Figure figure = new Figure(800, 600, "Consensus Network Simulation");
+
+				// Create charts and add to figure
+				figure.addChart(0, 0, solution, HybridTime.TIME, "systemValue", "Time (sec)", "System Value", null, false);
+				figure.addChart(0, 1, solution, HybridTime.TIME, "controllerValue", "Time (sec)", "Controller Value", null,
+						false);
+				figure.addChart(0, 2, solution, HybridTime.TIME, "communicationTimer", "Time (sec)", "Communication Timer",
+						null, false);
+				// export figure to pdf
+				figure.exportToFile(GraphicFormat.PDF);
 	}
 
 	/**

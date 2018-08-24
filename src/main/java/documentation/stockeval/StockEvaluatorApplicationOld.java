@@ -1,5 +1,5 @@
 
-package stockevaluator.externaldef;
+package documentation.stockeval;
 
 import org.jfree.chart.ChartPanel;
 
@@ -17,7 +17,7 @@ import pl.zankowski.iextrading4j.api.stocks.ChartRange;
  * @author Brendan Short
  *
  */
-public class StockEvaluatorApplication {
+public class StockEvaluatorApplicationOld {
 
 	/**
 	 * Main method for running application

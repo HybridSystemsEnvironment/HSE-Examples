@@ -1,4 +1,4 @@
-package stockevaluator.externaldef;
+package documentation.stockeval;
 
 import pl.zankowski.iextrading4j.api.stocks.ChartRange;
 

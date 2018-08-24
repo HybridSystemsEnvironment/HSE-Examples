@@ -1,5 +1,5 @@
 
-package stockevaluator.externaldef;
+package documentation.stockeval;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 

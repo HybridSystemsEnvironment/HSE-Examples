@@ -1,5 +1,5 @@
 
-package stockevaluator.externaldef;
+package documentation.stockeval;
 
 import org.jfree.chart.ChartPanel;
 
