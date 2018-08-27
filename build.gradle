@@ -37,3 +37,28 @@ jar {
 }
  
  
+task(runFirefly, dependsOn: 'classes', type: JavaExec) {
+    main = 'firefly.application.HSEApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task(runBouncingBall, dependsOn: 'classes', type: JavaExec) {
+    main = 'bouncingball.application.HSEApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
+ 
+task(runStockEvaluator, dependsOn: 'classes', type: JavaExec) {
+    main = 'stockevaluator.application.HSEApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task(runConsensus, dependsOn: 'classes', type: JavaExec) {
+    main = 'consensus.application.HSEApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
+task(runInverter, dependsOn: 'classes', type: JavaExec) {
+    main = 'inverter.application.HSEApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
+  
+ 
