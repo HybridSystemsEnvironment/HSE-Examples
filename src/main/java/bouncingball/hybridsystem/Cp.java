@@ -14,7 +14,7 @@ public class Cp implements FlowSet<State> {
 	@Override
 	public boolean C(State x) {
 
-		return x.yPosition > 0.0 || ((x.yPosition == 0.0) && (x.yVelocity >= 0));
+		return x.yPosition > 0.0 || ((x.yPosition == 0.0) && (x.yVelocity > 0));
 	}
 
 }
