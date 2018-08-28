@@ -18,6 +18,8 @@ public class PostProcessor {
 
 		Figure figure = generateAllStateFigure(environment.getTrajectories());
 		figure.display();
+		Figure figure2 = generateAllStateFigureJump(environment.getTrajectories());
+		figure2.display();
 	}
 
 	/**
@@ -33,6 +35,16 @@ public class PostProcessor {
 		Figure figure = new Figure(1000, 600, "Simple Math Simulation");
 		// Add charts
 		figure.add(0, 0, solution, HybridTime.TIME, "value", "Time (sec)", "Value", null, false);
+		// Export the figure as a pdf
+		return figure;
+	}
+
+	public static Figure generateAllStateFigureJump(TrajectorySet solution) {
+
+		// Create figure
+		Figure figure = new Figure(1000, 600, "Simple Math Simulation");
+		// Add charts
+		figure.add(0, 0, solution, HybridTime.JUMP, "value", "Jump", "Value", null, false);
 		// Export the figure as a pdf
 		return figure;
 	}
