@@ -60,5 +60,9 @@ task(runInverter, dependsOn: 'classes', type: JavaExec) {
     main = 'inverter.application.HSEApplication'
     classpath = sourceSets.main.runtimeClasspath
 }
+task(runSimpleMath, dependsOn: 'classes', type: JavaExec) {
+    main = 'simplemath.application.HSEApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
   
  

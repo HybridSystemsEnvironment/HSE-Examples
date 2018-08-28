@@ -24,7 +24,7 @@ public class ContentLoader {
 	public static void loadEnvironmentContent(HSEnvironment environment) {
 
 		// Initialize the state
-		State state = new State(0.0, 0.0);
+		State state = new State(1.0, 0.0);
 		// Initialize the parameters
 		Parameters parameters = new Parameters(.97, 9.81);
 		// Initialize the hybrid system

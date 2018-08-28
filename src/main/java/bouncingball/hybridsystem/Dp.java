@@ -14,7 +14,7 @@ public class Dp implements JumpSet<State> {
 	@Override
 	public boolean D(State x) {
 
-		return x.yPosition <= 0.0 && x.yVelocity < 0.0;
+		return x.yPosition <= 0.0 && x.yVelocity <= 0.0;
 	}
 
 }
